@@ -7,6 +7,7 @@ use App\Http\Controllers\Referentiels\EtudiantController;
 use App\Http\Controllers\Referentiels\FiliereController;
 use App\Http\Controllers\Referentiels\ModuleController;
 use App\Http\Controllers\Pv\PvController;
+use App\Http\Controllers\Corpus\CorpusController;
 use Illuminate\Support\Facades\Route;
 
 // §7.1 Gestion des utilisateurs et des acces (E1). Routes publiques minimales
@@ -67,6 +68,16 @@ Route::middleware('auth:api')->group(function () {
 
         Route::middleware('role:agent_scolarite')->group(function () {
             Route::post('/pv/import', [PvController::class, 'importer']);
+        });
+
+        // §8.1, E4 : constitution/annotation du corpus OCR. §5 RBAC :
+        // "Constituer/annoter corpus OCR" -> Agent scolarite + Admin uniquement.
+        Route::middleware('role:agent_scolarite,admin')->group(function () {
+            Route::get('/corpus/documents', [CorpusController::class, 'index']);
+            Route::get('/corpus/documents/{document}', [CorpusController::class, 'show']);
+            Route::post('/corpus/documents', [CorpusController::class, 'store']);
+            Route::post('/corpus/documents/{document}/annotations', [CorpusController::class, 'storeAnnotation']);
+            Route::post('/corpus/repartir', [CorpusController::class, 'repartir']);
         });
     });
 });

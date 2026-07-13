@@ -13,7 +13,9 @@ CREATE TABLE documents_corpus (
     nom_fichier         VARCHAR(255) NOT NULL,
     chemin_fichier      TEXT NOT NULL,
     type_gabarit        VARCHAR(100) NOT NULL, -- ex: 'PV_semestriel_v1', identifie le gabarit documentaire (§8.1 étape 1)
-    jeu                 jeu_corpus NOT NULL,    -- train/val/test (§8.1 étape 4)
+    -- Nullable : un document est importe AVANT d'etre reparti (§8.1 etape 4,
+    -- E4 CorpusController::repartir) ; NULL = pas encore assigne a un jeu.
+    jeu                 jeu_corpus,
     anonymise           BOOLEAN NOT NULL DEFAULT true, -- §13.3/§13.6 : anonymisation systématique du corpus
     date_annotation     TIMESTAMPTZ,
     importe_par_id      UUID REFERENCES utilisateurs(id) ON DELETE SET NULL,

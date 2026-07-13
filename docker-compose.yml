@@ -55,6 +55,23 @@ services:
       postgres:
         condition: service_healthy
 
+  # Pipeline d'entrainement OCR (§8, E5) : job ponctuel, jamais demarre par
+  # `docker compose up` (profile dedie). Lancer explicitement :
+  #   docker compose run --rm ocr-training
+  ocr-training:
+    profiles: ["training"]
+    build:
+      context: ./ocr-service
+      dockerfile: training/Dockerfile
+    environment:
+      OCR_DATABASE_URL: postgresql://siarn:siarn@postgres:5432/siarn
+    volumes:
+      - ./ocr-service:/app
+      - siarn_training_travail:/travail
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   frontend:
     build:
       context: ./frontend
@@ -71,3 +88,4 @@ services:
 volumes:
   siarn_postgres_data:
   siarn_modeles_ocr:
+  siarn_training_travail:

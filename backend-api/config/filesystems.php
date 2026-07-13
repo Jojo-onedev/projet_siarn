@@ -57,6 +57,17 @@ return [
             'report' => false,
         ],
 
+        // Corpus d'entrainement OCR (§8, E4). Isole du disque 'pv' (precision
+        // de conception §10 : jamais melanger corpus et donnees de production),
+        // partage en lecture avec le pipeline d'entrainement Python (volume Docker).
+        'corpus' => [
+            'driver' => 'local',
+            'root' => storage_path('app/corpus'),
+            'serve' => false,
+            'throw' => true,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
