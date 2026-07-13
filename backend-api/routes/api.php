@@ -13,12 +13,19 @@ use App\Http\Controllers\Notes\NoteController;
 use App\Http\Controllers\Absences\AbsenceController;
 use App\Http\Controllers\Reclamations\ReclamationController;
 use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Audit\AuditController;
+use App\Http\Controllers\Portail\EtudiantPortailController;
 use Illuminate\Support\Facades\Route;
 
 // §7.1 Gestion des utilisateurs et des acces (E1). Routes publiques minimales
 // (connexion), le reste exige un JWT valide (auth:api).
-Route::post('/auth/connexion', [AuthController::class, 'connexion']);
-Route::post('/auth/mfa/verifier', [AuthController::class, 'verifierMfa']);
+// throttle (§11, E11) : limite anti brute-force par IP, complementaire au
+// verrouillage de compte (§13.1, par utilisateur) - protege aussi contre le
+// balayage d'emails inconnus, qui ne declenche aucun verrouillage de compte.
+Route::middleware('throttle:auth')->group(function () {
+    Route::post('/auth/connexion', [AuthController::class, 'connexion']);
+    Route::post('/auth/mfa/verifier', [AuthController::class, 'verifierMfa']);
+});
 
 Route::middleware('auth:api')->group(function () {
     Route::post('/auth/deconnexion', [AuthController::class, 'deconnexion']);
@@ -142,6 +149,22 @@ Route::middleware('auth:api')->group(function () {
             Route::post('/corpus/documents', [CorpusController::class, 'store']);
             Route::post('/corpus/documents/{document}/annotations', [CorpusController::class, 'storeAnnotation']);
             Route::post('/corpus/repartir', [CorpusController::class, 'repartir']);
+        });
+
+        // §7.9, §13.5, UC-10, E11 : consultation de la piste d'audit.
+        // §5 RBAC : Admin + Directeur uniquement.
+        Route::middleware('role:admin,directeur')->group(function () {
+            Route::get('/audit', [AuditController::class, 'index']);
+        });
+
+        // §7.2, §7.6, §7.7, UC-06, E12 : portail etudiant. Chaque etudiant ne
+        // consulte que SES propres donnees (resolu via etudiants.utilisateur_id,
+        // jamais un id fourni par le client) - §5 : Consulter ses notes -> Etudiant uniquement.
+        Route::middleware('role:etudiant')->group(function () {
+            Route::get('/mon-profil', [EtudiantPortailController::class, 'profil']);
+            Route::get('/mes-notes', [EtudiantPortailController::class, 'notes']);
+            Route::get('/mes-alertes', [EtudiantPortailController::class, 'alertes']);
+            Route::get('/mes-reclamations', [EtudiantPortailController::class, 'reclamations']);
         });
     });
 });

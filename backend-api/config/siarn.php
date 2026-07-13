@@ -59,4 +59,12 @@ return [
     'sla' => [
         'delai_defaut_heures' => (int) env('SLA_DELAI_DEFAUT_HEURES', 72),
     ],
+
+    // §13.4, E11 : securite transverse.
+    'securite' => [
+        // Limite anti brute-force par IP sur /auth/connexion et /auth/mfa/verifier.
+        // Valeur test (phpunit.xml) largement relevee : la suite genere plus
+        // de requetes/minute qu'un usage reel depuis une seule IP.
+        'limite_connexion_par_minute' => (int) env('AUTH_LIMITE_CONNEXION_PAR_MINUTE', 10),
+    ],
 ];

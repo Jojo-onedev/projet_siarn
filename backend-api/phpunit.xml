@@ -37,6 +37,10 @@
         <env name="DB_PASSWORD" value="siarn"/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
+        <!-- E11 : seuil de rate limiting anti brute-force largement releve en
+             test - la suite genere legitimement plus de connexions/minute
+             qu'un usage reel depuis une seule IP (voir AppServiceProvider). -->
+        <env name="AUTH_LIMITE_CONNEXION_PAR_MINUTE" value="1000"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>

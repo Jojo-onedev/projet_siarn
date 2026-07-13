@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnTetesSecurite;
 use App\Http\Middleware\VerifieMfaConfiguree;
 use App\Http\Middleware\VerifieRole;
 use Illuminate\Foundation\Application;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => VerifieRole::class,
             'mfa.requise' => VerifieMfaConfiguree::class,
         ]);
+        $middleware->append(EnTetesSecurite::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
