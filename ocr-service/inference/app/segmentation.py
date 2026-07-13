@@ -49,3 +49,20 @@ def extraire_zones(image: np.ndarray, type_gabarit: str) -> dict[str, np.ndarray
         y1 = int((zone.y + zone.hauteur) * hauteur_image)
         zones[zone.nom] = image[y0:y1, x0:x1]
     return zones
+
+
+def zones_en_pixels(image: np.ndarray, type_gabarit: str) -> list[dict]:
+    """Coordonnees pixel des zones (pour surlignage cote frontend, §7.5),
+    sans recouper l'image (utilise par l'endpoint de pretraitement seul,
+    E3 - la decoupe reelle par zone reste dans extraire_zones pour l'OCR, E6)."""
+    hauteur_image, largeur_image = image.shape[:2]
+    return [
+        {
+            "nom": zone.nom,
+            "x": int(zone.x * largeur_image),
+            "y": int(zone.y * hauteur_image),
+            "largeur": int(zone.largeur * largeur_image),
+            "hauteur": int(zone.hauteur * hauteur_image),
+        }
+        for zone in zones_pour_gabarit(type_gabarit)
+    ]

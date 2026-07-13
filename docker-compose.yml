@@ -29,6 +29,7 @@ services:
       DB_HOST: postgres
       DB_PORT: 5432
       SQL_MIGRATIONS_DIR: /infra-sql-migrations
+      OCR_SERVICE_URL: http://ocr-service:8000
     ports:
       - "8000:8000"
     volumes:

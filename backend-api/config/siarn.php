@@ -23,4 +23,18 @@ return [
     'mfa' => [
         'emetteur' => env('MFA_EMETTEUR', 'SIARN'),
     ],
+
+    // Microservice OCR (§11.1) : prétraitement OpenCV + segmentation (E3),
+    // inférence (E6). backend-api l'appelle en HTTP, jamais d'accès disque
+    // partagé direct (isolation des microservices).
+    'ocr_service' => [
+        'url' => env('OCR_SERVICE_URL', 'http://ocr-service:8000'),
+        'timeout_secondes' => (int) env('OCR_SERVICE_TIMEOUT', 30),
+    ],
+
+    // Import de PV (§7.3, §13.4) : types/taille acceptés côté import de lots.
+    'import_pv' => [
+        'extensions_autorisees' => ['jpg', 'jpeg', 'png'],
+        'taille_max_ko' => (int) env('PV_TAILLE_MAX_KO', 15360), // 15 Mo
+    ],
 ];

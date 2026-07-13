@@ -47,6 +47,16 @@ return [
             'report' => false,
         ],
 
+        // Scans de PV (§7.3) : donnees sensibles (notes), jamais servies en
+        // acces public direct - toujours via un controleur qui verifie le RBAC.
+        'pv' => [
+            'driver' => 'local',
+            'root' => storage_path('app/pv'),
+            'serve' => false,
+            'throw' => true,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

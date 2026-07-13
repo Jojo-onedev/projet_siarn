@@ -18,4 +18,10 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# --no-reload : sans cette option, `artisan serve` ne transmet au processus
+# serveur qu'une liste restreinte de variables d'environnement (pour pouvoir
+# recharger proprement au changement de .env) et ecrase silencieusement les
+# surcharges Docker (DB_HOST=postgres, etc.) par les valeurs brutes du .env
+# monte (bug decouvert en verifiant reellement une requete HTTP en conteneur,
+# pas seulement `artisan migrate`/`tinker` qui eux lisent l'env correctement).
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000", "--no-reload"]

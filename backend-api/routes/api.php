@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\MfaController;
 use App\Http\Controllers\Referentiels\EtudiantController;
 use App\Http\Controllers\Referentiels\FiliereController;
 use App\Http\Controllers\Referentiels\ModuleController;
+use App\Http\Controllers\Pv\PvController;
 use Illuminate\Support\Facades\Route;
 
 // §7.1 Gestion des utilisateurs et des acces (E1). Routes publiques minimales
@@ -53,6 +54,19 @@ Route::middleware('auth:api')->group(function () {
             Route::post('/etudiants', [EtudiantController::class, 'store']);
             Route::put('/etudiants/{etudiant}', [EtudiantController::class, 'update']);
             Route::post('/etudiants/import', [EtudiantController::class, 'importer']);
+        });
+
+        // §7.3 Import & pretraitement des PV (E3). Import reserve a l'agent
+        // de scolarite (§5 RBAC : seul role coche pour "Importer/numeriser un
+        // PV", pas meme Admin) ; lecture ouverte comme les autres referentiels
+        // pour le pilotage (§7.8, futurs tableaux de bord).
+        Route::middleware('role:agent_scolarite,chef_departement,responsable_academique,directeur,admin')->group(function () {
+            Route::get('/pv', [PvController::class, 'index']);
+            Route::get('/pv/{pv}', [PvController::class, 'show']);
+        });
+
+        Route::middleware('role:agent_scolarite')->group(function () {
+            Route::post('/pv/import', [PvController::class, 'importer']);
         });
     });
 });

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from .routers import extraction, sante
+from .routers import extraction, pretraitement, sante
 
 app = FastAPI(
     title="SIARN — Microservice OCR",
@@ -9,4 +9,5 @@ app = FastAPI(
 )
 
 app.include_router(sante.router)
+app.include_router(pretraitement.router)
 app.include_router(extraction.router)
