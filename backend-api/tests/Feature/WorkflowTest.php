@@ -267,4 +267,29 @@ class WorkflowTest extends TestCase
 
         $this->assertDatabaseHas('alertes', ['pv_id' => $pv->id, 'niveau' => 'avertissement']);
     }
+
+    public function test_publication_notifie_les_etudiants(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+
+        $filiere = $this->creerFiliere();
+        $module = $this->creerModule($filiere);
+        $compteEtudiant = $this->creerUtilisateur('etudiant');
+        $etudiant = Etudiant::create([
+            'matricule' => 'MAT-'.uniqid(), 'nom' => 'Sawadogo', 'prenom' => 'Fatim', 'filiere_id' => $filiere->id,
+            'niveau' => 'L3', 'annee_academique' => '2025-2026', 'actif' => true, 'utilisateur_id' => $compteEtudiant->id,
+        ]);
+        $pv = $this->creerPv($filiere, $module, 'integre');
+        Note::create(['etudiant_id' => $etudiant->id, 'pv_id' => $pv->id, 'valeur' => 15, 'coefficient' => 3, 'credit' => 5, 'etat_validation' => 'valide']);
+
+        $agent = $this->creerUtilisateur('agent_scolarite');
+        $token = $this->jetonPour($agent);
+
+        $reponse = $this->withHeader('Authorization', "Bearer {$token}")->postJson("/api/pv/{$pv->id}/publier");
+
+        $reponse->assertOk();
+        $this->assertEquals('publie', $reponse->json('statut'));
+        $this->assertDatabaseHas('alertes', ['pv_id' => $pv->id, 'destinataire_id' => $compteEtudiant->id, 'niveau' => 'info']);
+        \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\NotesPublieesMail::class, fn ($mail) => $mail->etudiant->id === $etudiant->id);
+    }
 }

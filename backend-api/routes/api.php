@@ -11,6 +11,8 @@ use App\Http\Controllers\Corpus\CorpusController;
 use App\Http\Controllers\Ocr\ModeleOcrController;
 use App\Http\Controllers\Notes\NoteController;
 use App\Http\Controllers\Absences\AbsenceController;
+use App\Http\Controllers\Reclamations\ReclamationController;
+use App\Http\Controllers\Dashboard\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 // §7.1 Gestion des utilisateurs et des acces (E1). Routes publiques minimales
@@ -85,6 +87,33 @@ Route::middleware('auth:api')->group(function () {
         // academique (les 3 filieres), §5.
         Route::middleware('role:chef_departement,responsable_academique')->group(function () {
             Route::post('/pv/{pv}/valider', [PvController::class, 'valider']);
+        });
+
+        // §7.7, §9.1, E9 : publication des resultats. Pas de ligne dediee au
+        // §5 - choix conservateur : agent (execution operationnelle) + admin
+        // + responsable academique (supervision globale).
+        Route::middleware('role:agent_scolarite,responsable_academique,admin')->group(function () {
+            Route::post('/pv/{pv}/publier', [PvController::class, 'publier']);
+        });
+
+        // §7.7, UC-07, E9 : reclamations. "Initier reclamation" -> Etudiant
+        // uniquement (§5) ; traitement ouvert au personnel de scolarite/hierarchie.
+        Route::middleware('role:etudiant')->group(function () {
+            Route::post('/reclamations', [ReclamationController::class, 'store']);
+        });
+        Route::middleware('role:agent_scolarite,chef_departement,responsable_academique,admin')->group(function () {
+            Route::get('/reclamations', [ReclamationController::class, 'index']);
+            Route::post('/reclamations/{reclamation}/repondre', [ReclamationController::class, 'repondre']);
+        });
+
+        // §7.8, E10 : tableaux de bord. §5 RBAC : Chef de departement (sa
+        // filiere, scope verifie dans le controleur) + Responsable
+        // academique + Directeur uniquement - Agent scolarite et Admin
+        // explicitement exclus de cette ligne de la matrice.
+        Route::middleware('role:chef_departement,responsable_academique,directeur')->group(function () {
+            Route::get('/dashboard/pv', [DashboardController::class, 'pv']);
+            Route::get('/dashboard/ocr', [DashboardController::class, 'ocr']);
+            Route::get('/dashboard/pv/export', [DashboardController::class, 'exporterPv']);
         });
 
         // §5 RBAC : "Verifier son propre PV numerise (lecture + signalement

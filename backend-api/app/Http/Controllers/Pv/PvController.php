@@ -10,6 +10,7 @@ use App\Models\ModeleOcr;
 use App\Models\ProcesVerbal;
 use App\Services\Audit\JournalAuditService;
 use App\Services\Corpus\RetroactionCorpusService;
+use App\Services\Notifications\NotificationPublicationService;
 use App\Services\Ocr\OcrClientService;
 use App\StateMachines\MachineEtatsPv;
 use Illuminate\Http\Request;
@@ -30,6 +31,7 @@ class PvController extends Controller
         private readonly OcrClientService $ocrClient,
         private readonly JournalAuditService $journalAudit,
         private readonly RetroactionCorpusService $retroaction,
+        private readonly NotificationPublicationService $notificationPublication,
     ) {}
 
     public function index(Request $request)
@@ -192,6 +194,27 @@ class PvController extends Controller
             $pv->notes()->update(['etat_validation' => 'valide', 'valide_par_id' => $acteur->id]);
             $pv = $this->machineEtats->transitionner($pv, StatutPv::Integre, $acteur);
         }
+
+        return response()->json($this->presenter($pv->fresh()));
+    }
+
+    /**
+     * §7.7, §9.1 : publication des resultats - action deliberee (pas de
+     * cascade automatique depuis 'integre', contrairement a valide->integre
+     * qui n'a pas d'etape metier intermediaire decrite) : rendre les notes
+     * visibles aux etudiants et declencher les notifications est une action
+     * a forte visibilite, jamais silencieuse.
+     */
+    public function publier(Request $request, ProcesVerbal $pv)
+    {
+        if ($pv->statut !== StatutPv::Integre) {
+            return response()->json(['message' => "Ce PV n'est pas pret pour la publication (statut actuel : {$pv->statut->value})."], 409);
+        }
+
+        $acteur = $request->user();
+        $pv = $this->machineEtats->transitionner($pv, StatutPv::Publie, $acteur);
+
+        $this->notificationPublication->notifierPublication($pv);
 
         return response()->json($this->presenter($pv->fresh()));
     }
