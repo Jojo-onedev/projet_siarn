@@ -5,10 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\RoleUtilisateur;
 use App\Http\Controllers\Controller;
 use App\Models\Utilisateur;
+use App\Services\Audit\JournalAuditService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 // Gestion des comptes/roles (§5 RBAC : reserve a Admin ; §7.1). Le
@@ -16,6 +15,8 @@ use Illuminate\Validation\Rule;
 // d'inscription self-service (hors perimetre RBAC pour les roles internes).
 class UtilisateurController extends Controller
 {
+    public function __construct(private readonly JournalAuditService $journalAudit) {}
+
     public function index(Request $request)
     {
         return response()->json(
@@ -43,15 +44,13 @@ class UtilisateurController extends Controller
             'actif' => true,
         ]);
 
-        DB::table('journal_audit')->insert([
-            'id' => (string) Str::uuid(),
-            'action' => 'utilisateur.creation',
-            'acteur_id' => $request->user()->id,
-            'cible_type' => 'utilisateur',
-            'cible_id' => $utilisateur->id,
-            'details_json' => json_encode(['role' => $donnees['role']]),
-            'date_heure' => now(),
-        ]);
+        $this->journalAudit->enregistrer(
+            'utilisateur.creation',
+            $request->user()->id,
+            'utilisateur',
+            $utilisateur->id,
+            ['role' => $donnees['role']],
+        );
 
         return response()->json($this->presenter($utilisateur), 201);
     }

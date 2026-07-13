@@ -5,6 +5,7 @@ namespace App\Services\Auth;
 use App\Exceptions\AuthentificationException;
 use App\Models\SessionJwt;
 use App\Models\Utilisateur;
+use App\Services\Audit\JournalAuditService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +22,7 @@ class AuthentificationService
     public function __construct(
         private readonly JwtService $jwtService,
         private readonly Google2FA $google2fa,
+        private readonly JournalAuditService $journalAudit,
     ) {}
 
     public function connecter(string $email, string $motDePasse, ?string $ip, ?string $userAgent): array
@@ -110,7 +112,7 @@ class AuthentificationService
         $utilisateur->statut_mfa = true;
         $utilisateur->save();
 
-        $this->journaliserAudit('utilisateur.mfa_active', $utilisateur, []);
+        $this->journalAudit->enregistrer('utilisateur.mfa_active', $utilisateur->id, 'utilisateur', $utilisateur->id);
 
         return true;
     }
@@ -118,7 +120,7 @@ class AuthentificationService
     public function deconnecter(string $jti, Utilisateur $utilisateur): void
     {
         SessionJwt::where('jti', $jti)->update(['revoque' => true]);
-        $this->journaliserAudit('utilisateur.deconnexion', $utilisateur, []);
+        $this->journalAudit->enregistrer('utilisateur.deconnexion', $utilisateur->id, 'utilisateur', $utilisateur->id);
     }
 
     private function enregistrerEchec(Utilisateur $utilisateur): void
@@ -147,7 +149,7 @@ class AuthentificationService
         $utilisateur->save();
 
         $this->journaliserConnexion($utilisateur->id, $utilisateur->email, true, null, $ip, $userAgent);
-        $this->journaliserAudit('utilisateur.connexion', $utilisateur, []);
+        $this->journalAudit->enregistrer('utilisateur.connexion', $utilisateur->id, 'utilisateur', $utilisateur->id);
 
         return ['statut' => 'connecte', 'token' => $emission['token'], 'utilisateur' => $utilisateur];
     }
@@ -174,16 +176,4 @@ class AuthentificationService
         ]);
     }
 
-    private function journaliserAudit(string $action, Utilisateur $utilisateur, array $details): void
-    {
-        DB::table('journal_audit')->insert([
-            'id' => (string) Str::uuid(),
-            'action' => $action,
-            'acteur_id' => $utilisateur->id,
-            'cible_type' => 'utilisateur',
-            'cible_id' => $utilisateur->id,
-            'details_json' => json_encode($details),
-            'date_heure' => now(),
-        ]);
-    }
 }
