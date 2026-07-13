@@ -1,0 +1,32 @@
+# Environnement
+.env
+.env.*
+!.env.example
+
+# Frontend (Node)
+frontend/node_modules/
+frontend/dist/
+
+# Backend Laravel
+backend-api/vendor/
+backend-api/storage/*.key
+backend-api/bootstrap/cache/*.php
+backend-api/.phpunit.result.cache
+
+# OCR service (Python)
+ocr-service/**/__pycache__/
+ocr-service/**/*.pyc
+ocr-service/.venv/
+
+# Modèles OCR entraînés (volumineux, versionnés via Modele_OCR, pas via git)
+ocr-service/training/corpus/
+**/*.traineddata
+
+# Éditeurs / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Configuration locale d'outils IA (spécifique à la machine, pas à partager)
+.claude/

@@ -1,0 +1,62 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: siarn
+      POSTGRES_USER: siarn
+      POSTGRES_PASSWORD: siarn
+    ports:
+      - "5432:5432"
+    volumes:
+      - siarn_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U siarn -d siarn"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend-api:
+    build:
+      context: ./backend-api
+    env_file:
+      - ./backend-api/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend-api:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ocr-service:
+        condition: service_started
+
+  ocr-service:
+    build:
+      context: ./ocr-service
+    environment:
+      OCR_DATABASE_URL: postgresql://siarn:siarn@postgres:5432/siarn
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./ocr-service:/app
+      - siarn_modeles_ocr:/models/tessdata
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend-api
+
+volumes:
+  siarn_postgres_data:
+  siarn_modeles_ocr:
