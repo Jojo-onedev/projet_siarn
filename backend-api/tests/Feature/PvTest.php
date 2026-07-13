@@ -161,4 +161,118 @@ class PvTest extends TestCase
 
         $this->withHeader('Authorization', "Bearer {$token}")->getJson('/api/pv')->assertOk();
     }
+
+    private function creerModeleActif(string $version = 'siarn-ocr-v1'): string
+    {
+        $id = (string) \Illuminate\Support\Str::orderedUuid();
+        \Illuminate\Support\Facades\DB::table('modeles_ocr')->insert([
+            'id' => $id, 'version' => $version, 'chemin_traineddata' => "/models/tessdata/{$version}.traineddata",
+            'date_entrainement' => now(), 'cer' => 2.5, 'wer' => 5.0,
+            'taille_corpus_train' => 100, 'taille_corpus_val' => 20, 'taille_corpus_test' => 20,
+            'statut' => 'actif', 'created_at' => now(),
+        ]);
+
+        return $id;
+    }
+
+    public function test_extraction_avec_modele_actif_transitionne_vers_en_verification(): void
+    {
+        Storage::fake('pv');
+        $this->creerModeleActif();
+        Http::fake([
+            '*/pretraitement' => Http::response(['zones' => [], 'image_pretraitee_base64' => base64_encode('img')], 200),
+            '*/extraction' => Http::response(['champs' => [
+                ['champ' => 'tableau_notes', 'valeur' => '12/20', 'score_confiance' => 0.9, 'verification_requise' => false],
+            ]], 200),
+        ]);
+
+        $filiere = $this->creerFiliere();
+        $agent = $this->creerUtilisateur('agent_scolarite');
+        $token = $this->jetonPour($agent);
+
+        $reponse = $this->withHeader('Authorization', "Bearer {$token}")->post('/api/pv/import', [
+            'fichiers' => [UploadedFile::fake()->create('pv1.jpg', 100, 'image/jpeg')],
+            'code_matiere' => 'INF301', 'filiere_id' => $filiere->id, 'semestre' => 'S5', 'annee_academique' => '2025-2026',
+        ], ['Accept' => 'application/json']);
+
+        $pv = $reponse->json('pv_importes.0');
+        $this->assertEquals('en_verification', $pv['statut']);
+        $this->assertEquals('12/20', $pv['champs_extraits'][0]['valeur_ocr']);
+        $this->assertNull($pv['champs_extraits'][0]['valeur_validee']);
+    }
+
+    public function test_extraction_faible_confiance_transitionne_vers_erreur_extraction(): void
+    {
+        Storage::fake('pv');
+        $this->creerModeleActif();
+        Http::fake([
+            '*/pretraitement' => Http::response(['zones' => [], 'image_pretraitee_base64' => base64_encode('img')], 200),
+            '*/extraction' => Http::response(['champs' => [
+                ['champ' => 'tableau_notes', 'valeur' => '', 'score_confiance' => 0.0, 'verification_requise' => true],
+            ]], 200),
+        ]);
+
+        $filiere = $this->creerFiliere();
+        $agent = $this->creerUtilisateur('agent_scolarite');
+        $token = $this->jetonPour($agent);
+
+        $reponse = $this->withHeader('Authorization', "Bearer {$token}")->post('/api/pv/import', [
+            'fichiers' => [UploadedFile::fake()->create('pv1.jpg', 100, 'image/jpeg')],
+            'code_matiere' => 'INF301', 'filiere_id' => $filiere->id, 'semestre' => 'S5', 'annee_academique' => '2025-2026',
+        ], ['Accept' => 'application/json']);
+
+        $this->assertEquals('erreur_extraction', $reponse->json('pv_importes.0.statut'));
+    }
+
+    public function test_verification_complete_transitionne_vers_en_validation_et_alimente_le_corpus(): void
+    {
+        Storage::fake('pv');
+        $this->creerModeleActif();
+        Http::fake([
+            '*/pretraitement' => Http::response(['zones' => [['nom' => 'tableau_notes', 'x' => 0, 'y' => 0, 'largeur' => 10, 'hauteur' => 10]], 'image_pretraitee_base64' => base64_encode('img')], 200),
+            '*/extraction' => Http::response(['champs' => [
+                ['champ' => 'tableau_notes', 'valeur' => '1Z/20', 'score_confiance' => 0.6, 'verification_requise' => true],
+            ]], 200),
+        ]);
+
+        $filiere = $this->creerFiliere();
+        $agent = $this->creerUtilisateur('agent_scolarite');
+        $token = $this->jetonPour($agent);
+
+        $import = $this->withHeader('Authorization', "Bearer {$token}")->post('/api/pv/import', [
+            'fichiers' => [UploadedFile::fake()->create('pv1.jpg', 100, 'image/jpeg')],
+            'code_matiere' => 'INF301', 'filiere_id' => $filiere->id, 'semestre' => 'S5', 'annee_academique' => '2025-2026',
+        ], ['Accept' => 'application/json']);
+        $pvId = $import->json('pv_importes.0.id');
+
+        // Correction : "1Z/20" (OCR) -> "12/20" (agent) - difference reelle
+        $reponse = $this->withHeader('Authorization', "Bearer {$token}")->postJson("/api/pv/{$pvId}/verifier", [
+            'corrections' => [['champ' => 'tableau_notes', 'valeur_validee' => '12/20']],
+        ]);
+
+        $reponse->assertOk();
+        $this->assertEquals('en_validation', $reponse->json('statut'));
+
+        // Boucle de retroaction (§7.5/§8.4) : la correction devient une annotation du corpus.
+        $this->assertDatabaseHas('documents_corpus', ['chemin_fichier' => "pretraitees/{$pvId}.png"]);
+        $this->assertDatabaseHas('annotations', ['champ' => 'tableau_notes', 'valeur_verite_terrain' => '12/20']);
+    }
+
+    public function test_enseignant_ne_peut_pas_verifier_un_pv(): void
+    {
+        $filiere = $this->creerFiliere();
+        $agent = $this->creerUtilisateur('agent_scolarite');
+        $pv = \App\Models\ProcesVerbal::create([
+            'nom_fichier' => 'pv.jpg', 'chemin_fichier' => 'originaux/pv.jpg',
+            'code_matiere' => 'INF301', 'filiere_id' => $filiere->id, 'semestre' => 'S5',
+            'annee_academique' => '2025-2026', 'statut' => 'soumis', 'depose_par_id' => $agent->id,
+        ]);
+
+        $enseignant = $this->creerUtilisateur('enseignant');
+        $token = $this->jetonPour($enseignant);
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson("/api/pv/{$pv->id}/verifier", ['corrections' => []])
+            ->assertStatus(403);
+    }
 }

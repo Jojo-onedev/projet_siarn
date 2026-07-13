@@ -41,8 +41,9 @@ def generer_corpus_demo(repertoire: Path, ratio_test: float = 0.25):
     return exemples[n_test:], exemples[:n_test]  # train, test
 
 
-def executer(repertoire_travail: Path, max_iterations: int, version: str) -> dict:
+def executer(repertoire_travail: Path, repertoire_modeles: Path, max_iterations: int, version: str) -> dict:
     repertoire_travail.mkdir(parents=True, exist_ok=True)
+    repertoire_modeles.mkdir(parents=True, exist_ok=True)
     base = repertoire_travail / "base"
     corpus = repertoire_travail / "corpus"
     sortie = repertoire_travail / "sortie"
@@ -60,7 +61,11 @@ def executer(repertoire_travail: Path, max_iterations: int, version: str) -> dic
     prefixe_checkpoint = lancer_finetuning(prefixe_base, traineddata_reference, liste_train, sortie, max_iterations)
 
     print("[4/5] Finalisation du .traineddata et evaluation CER/WER...")
-    chemin_traineddata = finaliser_traineddata(prefixe_checkpoint, traineddata_reference, sortie / f"{version}.traineddata")
+    # Ecrit directement dans le volume partage avec l'inference (§8.3, E6) :
+    # promouvoir ce modele en 'actif' n'exige alors qu'un changement de statut
+    # en base, le fichier est deja au bon endroit pour que tesseract -l
+    # <version> le trouve (TESSDATA_PREFIX=/models/tessdata cote inference).
+    chemin_traineddata = finaliser_traineddata(prefixe_checkpoint, traineddata_reference, repertoire_modeles / f"{version}.traineddata")
     resultat_evaluation = evaluer_modele(exemples_test, chemin_traineddata)
     print(f"      CER moyen = {resultat_evaluation['cer_moyen'] * 100:.2f} %, WER moyen = {resultat_evaluation['wer_moyen'] * 100:.2f} %")
 
@@ -89,10 +94,11 @@ if __name__ == "__main__":
     analyseur.add_argument("--iterations", type=int, default=100)
     analyseur.add_argument("--version", default=f"siarn-ocr-demo-{datetime.now().strftime('%Y%m%d%H%M%S')}")
     analyseur.add_argument("--repertoire-travail", default="/tmp/siarn-training")
+    analyseur.add_argument("--repertoire-modeles", default="/models/tessdata")
     args = analyseur.parse_args()
 
     if not args.demo:
         raise SystemExit("Seul --demo (corpus synthetique) est disponible tant qu'aucun corpus reel n'existe (§17).")
 
-    resultat = executer(Path(args.repertoire_travail), args.iterations, args.version)
+    resultat = executer(Path(args.repertoire_travail), Path(args.repertoire_modeles), args.iterations, args.version)
     print(resultat)

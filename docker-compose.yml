@@ -68,6 +68,11 @@ services:
     volumes:
       - ./ocr-service:/app
       - siarn_training_travail:/travail
+      # Meme volume que ocr-service : le .traineddata final est ecrit
+      # directement ou l'inference le cherche (§8.3) - "promouvoir" un
+      # modele candidat en actif (E6) n'a alors qu'a mettre a jour le statut
+      # en base, aucune copie de fichier entre conteneurs.
+      - siarn_modeles_ocr:/models/tessdata
     depends_on:
       postgres:
         condition: service_healthy

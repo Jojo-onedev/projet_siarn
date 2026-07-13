@@ -38,13 +38,20 @@ class ProcesVerbal extends Model
         'type_gabarit',
         'chemin_image_pretraitee',
         'zones_segmentees',
+        'champs_extraits',
     ];
 
     protected $casts = [
         'statut' => StatutPv::class,
         'date_scan' => 'datetime',
         'zones_segmentees' => 'array',
+        'champs_extraits' => 'array',
     ];
+
+    public function modeleOcr(): BelongsTo
+    {
+        return $this->belongsTo(ModeleOcr::class, 'modele_ocr_id');
+    }
 
     public function filiere(): BelongsTo
     {

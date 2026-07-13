@@ -21,6 +21,7 @@ router = APIRouter(prefix="/extraction", tags=["extraction"])
 async def extraire_pv(
     fichier: UploadFile = File(...),
     type_gabarit: str = Form("defaut"),
+    modele_ocr_version: str | None = Form(None),
 ):
     contenu = await fichier.read()
     image = imdecode(np.frombuffer(contenu, np.uint8), IMREAD_COLOR)
@@ -28,9 +29,10 @@ async def extraire_pv(
     image_pretraitee = pretraiter(image)
     zones = extraire_zones(image_pretraitee, type_gabarit)
 
-    champs = [extraire_champ(image_zone, nom) for nom, image_zone in zones.items()]
+    champs = [extraire_champ(image_zone, nom, modele_ocr_version) for nom, image_zone in zones.items()]
 
     return {
         "type_gabarit": type_gabarit,
+        "modele_ocr_version": modele_ocr_version,
         "champs": champs,
     }

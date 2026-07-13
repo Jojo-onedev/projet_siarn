@@ -8,6 +8,7 @@ use App\Http\Controllers\Referentiels\FiliereController;
 use App\Http\Controllers\Referentiels\ModuleController;
 use App\Http\Controllers\Pv\PvController;
 use App\Http\Controllers\Corpus\CorpusController;
+use App\Http\Controllers\Ocr\ModeleOcrController;
 use Illuminate\Support\Facades\Route;
 
 // §7.1 Gestion des utilisateurs et des acces (E1). Routes publiques minimales
@@ -68,6 +69,14 @@ Route::middleware('auth:api')->group(function () {
 
         Route::middleware('role:agent_scolarite')->group(function () {
             Route::post('/pv/import', [PvController::class, 'importer']);
+            // §7.5, E7 : "Corriger donnees OCR" -> Agent scolarite uniquement (§5).
+            Route::post('/pv/{pv}/verifier', [PvController::class, 'verifier']);
+        });
+
+        // §7.8, §8.3 : consultation des versions du modele OCR (Admin, §5 :
+        // "Entrainer/evaluer le modele OCR" -> Admin (dev)).
+        Route::middleware('role:admin')->group(function () {
+            Route::get('/modeles-ocr', [ModeleOcrController::class, 'index']);
         });
 
         // §8.1, E4 : constitution/annotation du corpus OCR. §5 RBAC :

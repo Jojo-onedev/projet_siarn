@@ -4,25 +4,29 @@ namespace App\Http\Controllers\Pv;
 
 use App\Enums\StatutPv;
 use App\Http\Controllers\Controller;
+use App\Models\ModeleOcr;
 use App\Models\ProcesVerbal;
 use App\Services\Audit\JournalAuditService;
-use App\Services\Ocr\PretraitementClientService;
+use App\Services\Corpus\RetroactionCorpusService;
+use App\Services\Ocr\OcrClientService;
 use App\StateMachines\MachineEtatsPv;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-// §7.3 : import de lots de PV scannes (reserve Agent scolarite, §5 RBAC),
-// pretraitement OpenCV + segmentation (E3). L'extraction OCR des champs
-// (matricules/notes) releve de E6/E7 - ce controleur ne fait jamais avancer
-// un PV au-dela de 'en_traitement' (cf. MachineEtatsPv, §9.1).
+// §7.3/§8.3 : import de lots de PV, pretraitement OpenCV + segmentation (E3),
+// extraction OCR avec score de confiance par champ (E6), verification/
+// correction humaine (E7, §7.5) avec boucle de retroaction vers le corpus
+// (§8.4). Machine a etats explicite (MachineEtatsPv, §9.1) - jamais de
+// transition ad hoc dans ce controleur.
 class PvController extends Controller
 {
     public function __construct(
         private readonly MachineEtatsPv $machineEtats,
-        private readonly PretraitementClientService $ocrClient,
+        private readonly OcrClientService $ocrClient,
         private readonly JournalAuditService $journalAudit,
+        private readonly RetroactionCorpusService $retroaction,
     ) {}
 
     public function index(Request $request)
@@ -87,6 +91,61 @@ class PvController extends Controller
         return response()->json(['pv_importes' => $resultats], 201);
     }
 
+    /**
+     * Verification humaine (§7.5, §9.1, E7) : reserve a l'agent de scolarite
+     * (§5 RBAC : "Corriger donnees OCR" -> Agent scolarite uniquement).
+     * Accepte des corrections partielles (plusieurs appels possibles) ; la
+     * transition en_verification -> en_validation n'a lieu que lorsque TOUS
+     * les champs ont ete valides.
+     */
+    public function verifier(Request $request, ProcesVerbal $pv)
+    {
+        if ($pv->statut !== StatutPv::EnVerification) {
+            return response()->json(['message' => "Ce PV n'est pas en attente de verification (statut actuel : {$pv->statut->value})."], 409);
+        }
+
+        $donnees = $request->validate([
+            'corrections' => ['required', 'array', 'min:1'],
+            'corrections.*.champ' => ['required', 'string'],
+            'corrections.*.valeur_validee' => ['required', 'string'],
+        ]);
+
+        $acteur = $request->user();
+        $champs = collect($pv->champs_extraits ?? []);
+
+        foreach ($donnees['corrections'] as $correction) {
+            $index = $champs->search(fn ($c) => $c['champ'] === $correction['champ']);
+            if ($index === false) {
+                continue;
+            }
+
+            $champ = $champs[$index];
+            $champ['valeur_validee'] = $correction['valeur_validee'];
+            $champ['corrige_par_id'] = $acteur->id;
+            $champ['date_verification'] = now()->toIso8601String();
+            $champs[$index] = $champ;
+
+            $this->journalAudit->enregistrer('pv.champ_verifie', $acteur->id, 'proces_verbal', $pv->id, [
+                'champ' => $correction['champ'],
+                'valeur_ocr' => $champ['valeur_ocr'] ?? null,
+                'valeur_validee' => $correction['valeur_validee'],
+            ]);
+
+            if (($champ['valeur_ocr'] ?? null) !== $correction['valeur_validee']) {
+                $this->retroaction->exporterCorrection($pv, $correction['champ'], $correction['valeur_validee'], $acteur);
+            }
+        }
+
+        $pv->update(['champs_extraits' => $champs->values()->all()]);
+
+        $tousValides = $champs->every(fn ($c) => ! empty($c['valeur_validee']));
+        if ($tousValides) {
+            $pv = $this->machineEtats->transitionner($pv, StatutPv::EnValidation, $acteur);
+        }
+
+        return response()->json($this->presenter($pv->fresh()));
+    }
+
     private function importerUnFichier(UploadedFile $fichier, array $donnees, string $typeGabarit, $acteur): ProcesVerbal
     {
         $nomStocke = Str::uuid().'.'.$fichier->getClientOriginalExtension();
@@ -129,7 +188,7 @@ class PvController extends Controller
                 'zones_detectees' => count($resultat['zones'] ?? []),
             ]);
         } catch (\Throwable $e) {
-            $pv = $this->machineEtats->transitionner(
+            return $this->machineEtats->transitionner(
                 $pv,
                 StatutPv::ErreurExtraction,
                 $acteur,
@@ -137,7 +196,50 @@ class PvController extends Controller
             );
         }
 
-        return $pv->fresh();
+        return $this->extraireChamps($pv->fresh(), $fichier, $typeGabarit, $acteur);
+    }
+
+    /**
+     * §8.3/§9.1, E6 : applique le modele OCR actif. Sans modele actif, le PV
+     * reste en 'en_traitement' (rien a extraire) - pas de repli silencieux
+     * sur un OCR "pret a l'emploi" nom-versionne (regle non negociable §8).
+     */
+    private function extraireChamps(ProcesVerbal $pv, UploadedFile $fichier, string $typeGabarit, $acteur): ProcesVerbal
+    {
+        $modeleActif = ModeleOcr::where('statut', 'actif')->first();
+        if (! $modeleActif) {
+            return $pv;
+        }
+
+        try {
+            $resultat = $this->ocrClient->extraire($fichier, $typeGabarit, $modeleActif->version);
+        } catch (\Throwable $e) {
+            return $this->machineEtats->transitionner(
+                $pv, StatutPv::ErreurExtraction, $acteur, 'Extraction OCR echouee : '.$e->getMessage(),
+            );
+        }
+
+        $champs = collect($resultat['champs'] ?? [])->map(fn ($c) => [
+            'champ' => $c['champ'],
+            'valeur_ocr' => $c['valeur'],
+            'score_confiance' => $c['score_confiance'],
+            'verification_requise' => $c['verification_requise'],
+            'valeur_validee' => null,
+            'corrige_par_id' => null,
+            'date_verification' => null,
+        ]);
+
+        $confianceMoyenne = $champs->avg('score_confiance') ?? 0.0;
+        $pv->update(['champs_extraits' => $champs->values()->all(), 'modele_ocr_id' => $modeleActif->id]);
+
+        if ($confianceMoyenne < config('siarn.extraction.seuil_confiance_minimum')) {
+            return $this->machineEtats->transitionner(
+                $pv, StatutPv::ErreurExtraction, $acteur,
+                sprintf('Confiance moyenne trop faible (%.2f%%)', $confianceMoyenne * 100),
+            );
+        }
+
+        return $this->machineEtats->transitionner($pv, StatutPv::EnVerification, $acteur);
     }
 
     private function presenter(ProcesVerbal $pv): array
@@ -152,6 +254,8 @@ class PvController extends Controller
             'statut' => $pv->statut->value,
             'type_gabarit' => $pv->type_gabarit,
             'zones_segmentees' => $pv->zones_segmentees,
+            'champs_extraits' => $pv->champs_extraits,
+            'modele_ocr_id' => $pv->modele_ocr_id,
             'depose_par' => $pv->deposePar ? ['id' => $pv->deposePar->id, 'nom' => $pv->deposePar->nom, 'prenom' => $pv->deposePar->prenom] : null,
             'created_at' => $pv->created_at,
         ];

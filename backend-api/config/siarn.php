@@ -37,4 +37,13 @@ return [
         'extensions_autorisees' => ['jpg', 'jpeg', 'png'],
         'taille_max_ko' => (int) env('PV_TAILLE_MAX_KO', 15360), // 15 Mo
     ],
+
+    // Extraction OCR (§8.3, E6). Seuil plancher (pas le seuil de vérification
+    // par champ, déjà géré côté ocr-service) : en dessous, l'extraction est
+    // jugée totalement inexploitable -> 'erreur_extraction' plutôt que
+    // 'en_verification' (§9.1). Volontairement bas : le doute profite à la
+    // vérification humaine, jamais à un rejet automatique injustifié.
+    'extraction' => [
+        'seuil_confiance_minimum' => (float) env('OCR_SEUIL_CONFIANCE_MINIMUM', 0.05),
+    ],
 ];

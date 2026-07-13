@@ -22,6 +22,9 @@ ocr-service/.venv/
 ocr-service/training/corpus/
 **/*.traineddata
 
+# Artefacts générés par text2image/fontconfig lors des tests manuels (E5)
+ocr-service/fonts.conf
+
 # Éditeurs / OS
 .vscode/
 .idea/
