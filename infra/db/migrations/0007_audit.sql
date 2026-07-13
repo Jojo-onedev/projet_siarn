@@ -16,7 +16,11 @@
 CREATE TABLE journal_audit (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     action          VARCHAR(150) NOT NULL, -- ex: 'pv.transition', 'note.correction', 'utilisateur.connexion'
-    acteur_id       UUID REFERENCES utilisateurs(id) ON DELETE SET NULL, -- NULL = action système (moteur OCR, cron SLA)
+    -- RESTRICT (pas SET NULL) : un utilisateur ayant une trace d'audit ne peut
+    -- jamais etre supprime en dur (SET NULL declencherait un UPDATE en cascade,
+    -- que le trigger append-only ci-dessous rejette). Desactiver via actif=false
+    -- (0002_utilisateurs_auth.sql), jamais de DELETE sur utilisateurs en usage reel.
+    acteur_id       UUID REFERENCES utilisateurs(id) ON DELETE RESTRICT, -- NULL = action systeme (moteur OCR, cron SLA)
     cible_type      VARCHAR(100) NOT NULL, -- ex: 'proces_verbal', 'note', 'utilisateur'
     cible_id        UUID,
     details_json    JSONB NOT NULL DEFAULT '{}'::jsonb, -- ancien/nouvel état, motif, champs modifiés, etc.

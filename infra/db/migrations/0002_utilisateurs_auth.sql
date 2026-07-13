@@ -10,7 +10,7 @@ CREATE TABLE utilisateurs (
     mot_de_passe_hash   VARCHAR(255) NOT NULL, -- Bcrypt/Argon2 (§13.1), jamais géré côté DB
     role                role_utilisateur NOT NULL,
     statut_mfa          BOOLEAN NOT NULL DEFAULT false,
-    secret_mfa          VARCHAR(255),          -- chiffré applicativement avant stockage
+    secret_mfa          TEXT,                  -- chiffré applicativement avant stockage (payload chiffré > 255 caractères)
     tentatives_echec    SMALLINT NOT NULL DEFAULT 0,
     verrouille_jusqu_a  TIMESTAMPTZ,           -- verrouillage progressif anti brute-force (§13.1)
     dernier_login_a     TIMESTAMPTZ,

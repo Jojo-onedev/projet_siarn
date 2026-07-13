@@ -44,6 +44,16 @@ jobs:
     defaults:
       run:
         working-directory: backend-api
+    env:
+      # Doit correspondre au service postgres ci-dessous ; .env.example seul
+      # ne suffit pas car il vise le nom de base "siarn" (dev), pas "siarn_test".
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: siarn_test
+      DB_USERNAME: siarn
+      DB_PASSWORD: siarn
+      JWT_SECRET: ci-test-secret-ephemere-non-utilise-en-production
     services:
       postgres:
         image: postgres:16-alpine
@@ -60,7 +70,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.3"
+          # 8.4 minimum : Laravel 13 resout des dependances symfony/* qui
+          # exigent php>=8.4.1 (decouvert lors du build Docker de backend-api).
+          php-version: "8.4"
           extensions: pgsql, pdo_pgsql, mbstring
       - run: composer install --prefer-dist --no-interaction
       - run: cp .env.example .env
