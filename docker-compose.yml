@@ -6,7 +6,10 @@ services:
       POSTGRES_USER: siarn
       POSTGRES_PASSWORD: siarn
     ports:
-      - "5432:5432"
+      # 5433 cote hote : evite le conflit avec un Postgres natif eventuellement
+      # deja present sur la machine de dev (ecoute sur 5432). En interne aux
+      # conteneurs, le port reste 5432 (DB_HOST=postgres, DB_PORT=5432).
+      - "5433:5432"
     volumes:
       - siarn_postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -20,10 +23,17 @@ services:
       context: ./backend-api
     env_file:
       - ./backend-api/.env
+    environment:
+      # Ecrase les valeurs "hote" du .env : en conteneur, postgres est joignable
+      # par son nom de service, pas par 127.0.0.1.
+      DB_HOST: postgres
+      DB_PORT: 5432
+      SQL_MIGRATIONS_DIR: /infra-sql-migrations
     ports:
       - "8000:8000"
     volumes:
       - ./backend-api:/app
+      - ./infra/db/migrations:/infra-sql-migrations:ro
     depends_on:
       postgres:
         condition: service_healthy
