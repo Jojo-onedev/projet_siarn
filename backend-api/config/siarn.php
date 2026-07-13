@@ -46,4 +46,17 @@ return [
     'extraction' => [
         'seuil_confiance_minimum' => (float) env('OCR_SEUIL_CONFIANCE_MINIMUM', 0.05),
     ],
+
+    // Règles automatiques de pénalité (§7.6, E8) : seuil configurable de
+    // cumul d'absence non justifiée déclenchant un 00/20 automatique sur le
+    // module concerné.
+    'penalite' => [
+        'seuil_absence_heures' => (float) env('SEUIL_ABSENCE_HEURES', 8),
+    ],
+
+    // SLA (§9.2) : délai par défaut (heures) appliqué à une étape de workflow
+    // sans configuration explicite dans workflow_etapes.
+    'sla' => [
+        'delai_defaut_heures' => (int) env('SLA_DELAI_DEFAUT_HEURES', 72),
+    ],
 ];

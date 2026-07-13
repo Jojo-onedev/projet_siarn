@@ -9,6 +9,8 @@ use App\Http\Controllers\Referentiels\ModuleController;
 use App\Http\Controllers\Pv\PvController;
 use App\Http\Controllers\Corpus\CorpusController;
 use App\Http\Controllers\Ocr\ModeleOcrController;
+use App\Http\Controllers\Notes\NoteController;
+use App\Http\Controllers\Absences\AbsenceController;
 use Illuminate\Support\Facades\Route;
 
 // §7.1 Gestion des utilisateurs et des acces (E1). Routes publiques minimales
@@ -46,6 +48,8 @@ Route::middleware('auth:api')->group(function () {
             Route::get('/modules', [ModuleController::class, 'index']);
             Route::get('/etudiants', [EtudiantController::class, 'index']);
             Route::get('/etudiants/{etudiant}', [EtudiantController::class, 'show']);
+            // §7.6, E8 : calcul automatique de la moyenne.
+            Route::get('/etudiants/{etudiant}/moyenne', [EtudiantController::class, 'moyenne']);
         });
 
         Route::middleware($ecritureReferentiels)->group(function () {
@@ -65,12 +69,34 @@ Route::middleware('auth:api')->group(function () {
         Route::middleware('role:agent_scolarite,chef_departement,responsable_academique,directeur,admin')->group(function () {
             Route::get('/pv', [PvController::class, 'index']);
             Route::get('/pv/{pv}', [PvController::class, 'show']);
+            Route::get('/pv/{pv}/notes', [NoteController::class, 'index']);
         });
 
         Route::middleware('role:agent_scolarite')->group(function () {
             Route::post('/pv/import', [PvController::class, 'importer']);
             // §7.5, E7 : "Corriger donnees OCR" -> Agent scolarite uniquement (§5).
             Route::post('/pv/{pv}/verifier', [PvController::class, 'verifier']);
+            // §7.6, E8 : saisie des notes structurees par etudiant.
+            Route::post('/pv/{pv}/notes', [NoteController::class, 'store']);
+        });
+
+        // §7.6, §9.1, E8 : "Valider dossier de sa filiere" -> Chef de
+        // departement (sa filiere, verifie dans le controleur) + Responsable
+        // academique (les 3 filieres), §5.
+        Route::middleware('role:chef_departement,responsable_academique')->group(function () {
+            Route::post('/pv/{pv}/valider', [PvController::class, 'valider']);
+        });
+
+        // §5 RBAC : "Verifier son propre PV numerise (lecture + signalement
+        // fraude)" -> Enseignant uniquement (scoping par module verifie dans le controleur).
+        Route::middleware('role:enseignant')->group(function () {
+            Route::post('/notes/{note}/signaler-fraude', [NoteController::class, 'signalerFraude']);
+        });
+
+        // §7.6, E8 : declaration des absences (base du calcul de penalite automatique).
+        Route::middleware('role:agent_scolarite,enseignant,admin')->group(function () {
+            Route::get('/absences', [AbsenceController::class, 'index']);
+            Route::post('/absences', [AbsenceController::class, 'store']);
         });
 
         // §7.8, §8.3 : consultation des versions du modele OCR (Admin, §5 :

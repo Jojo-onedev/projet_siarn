@@ -72,4 +72,14 @@ class ProcesVerbal extends Model
     {
         return $this->hasMany(HistoriqueTransitionPv::class, 'pv_id');
     }
+
+    public function notes(): HasMany
+    {
+        return $this->hasMany(Note::class, 'pv_id');
+    }
+
+    public function decisions(): HasMany
+    {
+        return $this->hasMany(Decision::class, 'pv_id');
+    }
 }

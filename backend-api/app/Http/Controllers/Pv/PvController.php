@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Pv;
 
+use App\Enums\RoleUtilisateur;
 use App\Enums\StatutPv;
 use App\Http\Controllers\Controller;
+use App\Models\Decision;
 use App\Models\ModeleOcr;
 use App\Models\ProcesVerbal;
 use App\Services\Audit\JournalAuditService;
@@ -14,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 // §7.3/§8.3 : import de lots de PV, pretraitement OpenCV + segmentation (E3),
 // extraction OCR avec score de confiance par champ (E6), verification/
@@ -141,6 +144,53 @@ class PvController extends Controller
         $tousValides = $champs->every(fn ($c) => ! empty($c['valeur_validee']));
         if ($tousValides) {
             $pv = $this->machineEtats->transitionner($pv, StatutPv::EnValidation, $acteur);
+        }
+
+        return response()->json($this->presenter($pv->fresh()));
+    }
+
+    /**
+     * Validation hierarchique (§7.6, §9.1, E8). RBAC §5 : "Valider dossier
+     * de sa filiere" -> Chef de departement (sa filiere uniquement) ou
+     * Responsable academique (les 3 filieres) - le role seul (verifie par
+     * le middleware 'role:...') ne suffit pas pour un chef de departement,
+     * il faut aussi qu'il soit bien le chef de la filiere de ce PV precis.
+     */
+    public function valider(Request $request, ProcesVerbal $pv)
+    {
+        if ($pv->statut !== StatutPv::EnValidation) {
+            return response()->json(['message' => "Ce PV n'est pas en attente de validation (statut actuel : {$pv->statut->value})."], 409);
+        }
+
+        $acteur = $request->user();
+        if ($acteur->role === RoleUtilisateur::ChefDepartement && $pv->filiere->chef_departement_id !== $acteur->id) {
+            return response()->json(['message' => "Vous n'etes pas le chef de departement de cette filiere."], 403);
+        }
+
+        $donnees = $request->validate([
+            'decision' => ['required', Rule::in(['valider', 'rejeter', 'complement_requis'])],
+            'motif' => ['required_unless:decision,valider', 'nullable', 'string', 'max:2000'],
+        ]);
+
+        Decision::create([
+            'pv_id' => $pv->id,
+            'type_decision' => $donnees['decision'],
+            'motif' => $donnees['motif'] ?? null,
+            'auteur_id' => $acteur->id,
+            'date_decision' => now(),
+        ]);
+
+        $statutCible = match ($donnees['decision']) {
+            'valider' => StatutPv::Valide,
+            'rejeter' => StatutPv::Rejete,
+            'complement_requis' => StatutPv::ComplementRequis,
+        };
+
+        $pv = $this->machineEtats->transitionner($pv, $statutCible, $acteur, $donnees['motif'] ?? null);
+
+        if ($statutCible === StatutPv::Valide) {
+            $pv->notes()->update(['etat_validation' => 'valide', 'valide_par_id' => $acteur->id]);
+            $pv = $this->machineEtats->transitionner($pv, StatutPv::Integre, $acteur);
         }
 
         return response()->json($this->presenter($pv->fresh()));

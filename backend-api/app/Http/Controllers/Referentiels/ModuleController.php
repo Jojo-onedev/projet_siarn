@@ -57,6 +57,10 @@ class ModuleController extends Controller
             'semestre' => ['required', 'string', 'max:10'],
             'coefficient' => ['required', 'numeric', 'min:0'],
             'credits' => ['required', 'numeric', 'min:0'],
+            'enseignant_id' => [
+                'nullable', 'uuid',
+                Rule::exists('utilisateurs', 'id')->where(fn ($q) => $q->where('role', 'enseignant')),
+            ],
         ]);
     }
 
@@ -72,6 +76,7 @@ class ModuleController extends Controller
             'coefficient' => $module->coefficient,
             'credits' => $module->credits,
             'actif' => $module->actif,
+            'enseignant_id' => $module->enseignant_id,
         ];
     }
 }

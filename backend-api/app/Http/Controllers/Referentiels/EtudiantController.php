@@ -6,13 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\Etudiant;
 use App\Models\Filiere;
 use App\Services\Audit\JournalAuditService;
+use App\Services\Notes\CalculMoyenneService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 // §7.2 : referentiel etudiants, recherche multicritere, import de listes.
 class EtudiantController extends Controller
 {
-    public function __construct(private readonly JournalAuditService $journalAudit) {}
+    public function __construct(
+        private readonly JournalAuditService $journalAudit,
+        private readonly CalculMoyenneService $calculMoyenne,
+    ) {}
 
     public function index(Request $request)
     {
@@ -47,6 +51,20 @@ class EtudiantController extends Controller
     public function show(Etudiant $etudiant)
     {
         return response()->json($this->presenter($etudiant->load('filiere')));
+    }
+
+    /**
+     * §7.6 : calcul automatique de la moyenne ponderee (notes 'valide'
+     * uniquement, cf. CalculMoyenneService).
+     */
+    public function moyenne(Request $request, Etudiant $etudiant)
+    {
+        $donnees = $request->validate([
+            'semestre' => ['required', 'string', 'max:10'],
+            'annee_academique' => ['required', 'string', 'max:9'],
+        ]);
+
+        return response()->json($this->calculMoyenne->calculer($etudiant, $donnees['semestre'], $donnees['annee_academique']));
     }
 
     public function store(Request $request)

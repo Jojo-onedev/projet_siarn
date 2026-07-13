@@ -28,6 +28,7 @@ class Module extends Model
         'coefficient',
         'credits',
         'actif',
+        'enseignant_id',
     ];
 
     protected $casts = [
@@ -39,5 +40,10 @@ class Module extends Model
     public function filiere(): BelongsTo
     {
         return $this->belongsTo(Filiere::class);
+    }
+
+    public function enseignant(): BelongsTo
+    {
+        return $this->belongsTo(Utilisateur::class, 'enseignant_id');
     }
 }
