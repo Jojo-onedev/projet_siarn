@@ -6,7 +6,7 @@ import { useAuth } from '../auth/AuthContext';
 import { ErreurApi } from '../api/client';
 
 export default function MfaEnrollmentPage() {
-  const { demarrerEnrolementMfa, confirmerEnrolementMfa } = useAuth();
+  const { demarrerEnrolementMfa, confirmerEnrolementMfa, seDeconnecter } = useAuth();
   const [enrolement, setEnrolement] = useState(null);
   const [code, setCode] = useState('');
   const [erreur, setErreur] = useState(null);
@@ -98,6 +98,9 @@ export default function MfaEnrollmentPage() {
             />
             <Bouton type="submit" pleineLargeur chargement={enCours} disabled={code.length !== 6}>
               Activer le MFA
+            </Bouton>
+            <Bouton type="button" variante="fantome" pleineLargeur onClick={seDeconnecter}>
+              Annuler et se deconnecter
             </Bouton>
           </form>
         </>

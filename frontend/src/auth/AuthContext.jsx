@@ -70,6 +70,16 @@ export function AuthProvider({ children }) {
     navigate(doitEnroler ? '/mfa/activation' : '/', { replace: true });
   }
 
+  // Le jeton MFA intermediaire (mfa_token) n'est valide que 5 minutes
+  // (JWT_TTL_MFA_MINUTES) - au-dela, /auth/mfa/verifier renvoie 401 sans
+  // aucun moyen de rafraichir ce jeton depuis l'ecran de saisie du code.
+  // Sans issue explicite ici, l'utilisateur reste bloque a ressaisir un
+  // code sur un jeton perime (bug reel remonte en test manuel).
+  const annulerMfa = useCallback(() => {
+    setMfaToken(null);
+    navigate('/connexion', { replace: true });
+  }, [navigate]);
+
   const demarrerEnrolementMfa = useCallback(() => authApi.activerMfa(), []);
 
   const confirmerEnrolementMfa = useCallback(async (code) => {
@@ -98,10 +108,11 @@ export function AuthProvider({ children }) {
     pret,
     seConnecter,
     validerMfa,
+    annulerMfa,
     demarrerEnrolementMfa,
     confirmerEnrolementMfa,
     seDeconnecter,
-  }), [token, utilisateur, mfaToken, pret, seConnecter, validerMfa, demarrerEnrolementMfa, confirmerEnrolementMfa, seDeconnecter]);
+  }), [token, utilisateur, mfaToken, pret, seConnecter, validerMfa, annulerMfa, demarrerEnrolementMfa, confirmerEnrolementMfa, seDeconnecter]);
 
   return <AuthContext.Provider value={valeur}>{children}</AuthContext.Provider>;
 }

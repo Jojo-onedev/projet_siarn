@@ -7,7 +7,7 @@ import { useAuth } from '../auth/AuthContext';
 import { ErreurApi } from '../api/client';
 
 export default function MfaVerificationPage() {
-  const { mfaEnAttente, validerMfa } = useAuth();
+  const { mfaEnAttente, validerMfa, annulerMfa } = useAuth();
   const [code, setCode] = useState('');
   const [erreur, setErreur] = useState(null);
   const [enCours, setEnCours] = useState(false);
@@ -25,6 +25,11 @@ export default function MfaVerificationPage() {
     } catch (e) {
       if (e instanceof ErreurApi && e.statut === 423) {
         setErreur('Compte verrouille temporairement suite a plusieurs echecs.');
+      } else if (e instanceof ErreurApi && e.statut === 401) {
+        // Jeton mfa_token expire (valide 5 minutes) ou invalide : aucun
+        // nouveau code ne pourra jamais etre accepte sur cette page,
+        // il faut repartir de la connexion pour obtenir un jeton frais.
+        setErreur('Votre session de verification a expire (delai de 5 minutes depasse). Reconnectez-vous pour recevoir un nouveau code a saisir.');
       } else if (e instanceof ErreurApi) {
         setErreur(e.message);
       } else {
@@ -60,6 +65,9 @@ export default function MfaVerificationPage() {
 
         <Bouton type="submit" pleineLargeur chargement={enCours} disabled={code.length !== 6}>
           Valider
+        </Bouton>
+        <Bouton type="button" variante="fantome" pleineLargeur onClick={annulerMfa}>
+          Retour a la connexion
         </Bouton>
       </form>
     </AuthLayout>
