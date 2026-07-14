@@ -108,6 +108,7 @@ function FormulaireFiliere({ filiere, chefsDisponibles, estAdmin, onAnnuler, onE
   const [nom, setNom] = useState(filiere?.nom ?? '');
   const [code, setCode] = useState(filiere?.code ?? '');
   const [chefId, setChefId] = useState(filiere?.chef_departement?.id ?? '');
+  const [actif, setActif] = useState(filiere?.actif ?? true);
   const [erreurs, setErreurs] = useState({});
   const [erreurGenerale, setErreurGenerale] = useState(null);
   const [enCours, setEnCours] = useState(false);
@@ -118,7 +119,9 @@ function FormulaireFiliere({ filiere, chefsDisponibles, estAdmin, onAnnuler, onE
     setErreurGenerale(null);
     setEnCours(true);
     try {
-      await onEnregistrer({ nom, code, chef_departement_id: chefId || null });
+      const payload = { nom, code, chef_departement_id: chefId || null };
+      if (filiere) payload.actif = actif;
+      await onEnregistrer(payload);
     } catch (err) {
       if (err instanceof ErreurApi && err.erreurs) {
         setErreurs(Object.fromEntries(Object.entries(err.erreurs).map(([k, v]) => [k, v[0]])));
@@ -145,6 +148,12 @@ function FormulaireFiliere({ filiere, chefsDisponibles, estAdmin, onAnnuler, onE
               <option key={u.id} value={u.id}>{u.prenom} {u.nom} ({u.role})</option>
             ))}
           </Select>
+        ) : null}
+        {filiere ? (
+          <label className="bloc-compte__case">
+            <input type="checkbox" checked={actif} onChange={(e) => setActif(e.target.checked)} />
+            <span>Filière active</span>
+          </label>
         ) : null}
         <div className="formulaire__actions">
           <Bouton type="button" variante="secondaire" onClick={onAnnuler}>Annuler</Bouton>

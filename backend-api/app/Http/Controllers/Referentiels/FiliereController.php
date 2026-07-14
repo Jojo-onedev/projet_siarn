@@ -64,6 +64,9 @@ class FiliereController extends Controller
                     fn ($query) => $query->whereIn('role', ['chef_departement', 'responsable_academique'])
                 ),
             ],
+            // §13.6 : desactivation (jamais de suppression) - "sometimes" pour
+            // ne pas casser la creation, qui force toujours actif=true.
+            'actif' => ['sometimes', 'boolean'],
         ]);
     }
 

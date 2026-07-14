@@ -42,6 +42,7 @@ Route::middleware('auth:api')->group(function () {
     Route::middleware(['mfa.requise', 'role:admin'])->group(function () {
         Route::get('/utilisateurs', [UtilisateurController::class, 'index']);
         Route::post('/utilisateurs', [UtilisateurController::class, 'store']);
+        Route::put('/utilisateurs/{utilisateur}', [UtilisateurController::class, 'update']);
     });
 
     // §7.2 Referentiels (E2). Lecture large (pilotage/tableaux de bord des

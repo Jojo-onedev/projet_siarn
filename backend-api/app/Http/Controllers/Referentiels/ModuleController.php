@@ -61,6 +61,9 @@ class ModuleController extends Controller
                 'nullable', 'uuid',
                 Rule::exists('utilisateurs', 'id')->where(fn ($q) => $q->where('role', 'enseignant')),
             ],
+            // §13.6 : desactivation (jamais de suppression) - "sometimes" pour
+            // ne pas casser la creation, qui force toujours actif=true.
+            'actif' => ['sometimes', 'boolean'],
         ]);
     }
 

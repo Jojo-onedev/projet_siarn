@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { listerUtilisateurs, creerUtilisateur } from '../../api/utilisateurs';
+import { useAuth } from '../../auth/AuthContext';
+import { listerUtilisateurs, creerUtilisateur, modifierUtilisateur } from '../../api/utilisateurs';
 import { Tableau } from '../../components/ui/Tableau';
 import { Champ } from '../../components/ui/Champ';
 import { Select } from '../../components/ui/Select';
@@ -21,10 +22,12 @@ const ROLES = [
 ];
 
 export default function UtilisateursPage() {
+  const { utilisateur: moi } = useAuth();
   const [utilisateurs, setUtilisateurs] = useState([]);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState(null);
   const [modaleOuverte, setModaleOuverte] = useState(false);
+  const [enCoursId, setEnCoursId] = useState(null);
 
   useEffect(() => { charger(); }, []);
 
@@ -33,12 +36,39 @@ export default function UtilisateursPage() {
     listerUtilisateurs().then(setUtilisateurs).catch(() => setErreur('Impossible de charger les utilisateurs.')).finally(() => setChargement(false));
   }
 
+  async function basculerActivation(u) {
+    setErreur(null);
+    setEnCoursId(u.id);
+    try {
+      await modifierUtilisateur(u.id, { actif: !u.actif });
+      charger();
+    } catch (err) {
+      setErreur(err instanceof ErreurApi ? err.message : 'Action impossible.');
+    } finally {
+      setEnCoursId(null);
+    }
+  }
+
   const colonnes = [
     { cle: 'nom', entete: 'Nom', rendu: (u) => `${u.prenom} ${u.nom}` },
     { cle: 'email', entete: 'E-mail' },
     { cle: 'role', entete: 'Rôle', rendu: (u) => ROLES.find((r) => r.valeur === u.role)?.libelle ?? u.role },
     { cle: 'statut_mfa', entete: 'MFA', rendu: (u) => <Badge teinte={u.statut_mfa ? 'success' : 'neutre'}>{u.statut_mfa ? 'Actif' : 'Non configuré'}</Badge> },
     { cle: 'actif', entete: 'Compte', rendu: (u) => <Badge teinte={u.actif ? 'success' : 'danger'}>{u.actif ? 'Actif' : 'Désactivé'}</Badge> },
+    {
+      cle: 'actions',
+      entete: '',
+      rendu: (u) => u.id === moi.id ? null : (
+        <Bouton
+          type="button"
+          variante="secondaire"
+          chargement={enCoursId === u.id}
+          onClick={() => basculerActivation(u)}
+        >
+          {u.actif ? 'Désactiver' : 'Réactiver'}
+        </Bouton>
+      ),
+    },
   ];
 
   return (
@@ -46,7 +76,7 @@ export default function UtilisateursPage() {
       <div className="page-entete">
         <p className="page-entete__eyebrow">Administration</p>
         <h1>Comptes utilisateurs</h1>
-        <p>Un compte ayant un historique d'audit ne peut jamais être supprimé, seulement désactivé.</p>
+        <p>Un compte ayant un historique d'audit ne peut jamais être supprimé, seulement désactivé — la désactivation prend effet immédiatement, même si une session était déjà ouverte.</p>
       </div>
 
       <div className="section-entete">

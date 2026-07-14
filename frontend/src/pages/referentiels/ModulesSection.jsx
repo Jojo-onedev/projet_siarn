@@ -105,6 +105,7 @@ function FormulaireModule({ module, filieres, enseignants, estAdmin, onAnnuler, 
   const [coefficient, setCoefficient] = useState(module?.coefficient ?? 1);
   const [credits, setCredits] = useState(module?.credits ?? 1);
   const [enseignantId, setEnseignantId] = useState(module?.enseignant_id ?? '');
+  const [actif, setActif] = useState(module?.actif ?? true);
   const [erreurs, setErreurs] = useState({});
   const [erreurGenerale, setErreurGenerale] = useState(null);
   const [enCours, setEnCours] = useState(false);
@@ -115,11 +116,13 @@ function FormulaireModule({ module, filieres, enseignants, estAdmin, onAnnuler, 
     setErreurGenerale(null);
     setEnCours(true);
     try {
-      await onEnregistrer({
+      const payload = {
         code, nom, filiere_id: filiereId, niveau, semestre,
         coefficient: Number(coefficient), credits: Number(credits),
         enseignant_id: enseignantId || null,
-      });
+      };
+      if (module) payload.actif = actif;
+      await onEnregistrer(payload);
     } catch (err) {
       if (err instanceof ErreurApi && err.erreurs) {
         setErreurs(Object.fromEntries(Object.entries(err.erreurs).map(([k, v]) => [k, v[0]])));
@@ -162,6 +165,12 @@ function FormulaireModule({ module, filieres, enseignants, estAdmin, onAnnuler, 
             <option value="">— Aucun pour l'instant —</option>
             {enseignants.map((u) => <option key={u.id} value={u.id}>{u.prenom} {u.nom}</option>)}
           </Select>
+        ) : null}
+        {module ? (
+          <label className="bloc-compte__case">
+            <input type="checkbox" checked={actif} onChange={(e) => setActif(e.target.checked)} />
+            <span>Module actif</span>
+          </label>
         ) : null}
         <div className="formulaire__actions">
           <Bouton type="button" variante="secondaire" onClick={onAnnuler}>Annuler</Bouton>

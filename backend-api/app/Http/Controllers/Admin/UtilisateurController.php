@@ -55,6 +55,39 @@ class UtilisateurController extends Controller
         return response()->json($this->presenter($utilisateur), 201);
     }
 
+    /**
+     * §13.6/§7.1 : un compte ayant un historique d'audit ne peut jamais etre
+     * supprime (contrainte ON DELETE RESTRICT sur journal_audit.acteur_id),
+     * uniquement desactive. Jusqu'ici, aucune route ne permettait de
+     * modifier `actif` apres la creation - trouve en revue manuelle (aucun
+     * moyen de bloquer un compte compromis ou un agent parti). Desactiver
+     * prend effet immediatement : JwtGuard::user() rejette deja tout token
+     * dont l'utilisateur associe a `actif=false` (aucune revocation de
+     * session supplementaire necessaire ici).
+     */
+    public function update(Request $request, Utilisateur $utilisateur)
+    {
+        $donnees = $request->validate([
+            'actif' => ['required', 'boolean'],
+        ]);
+
+        if ($utilisateur->id === $request->user()->id && ! $donnees['actif']) {
+            return response()->json(['message' => 'Vous ne pouvez pas desactiver votre propre compte.'], 422);
+        }
+
+        $utilisateur->update($donnees);
+
+        $this->journalAudit->enregistrer(
+            $donnees['actif'] ? 'utilisateur.reactivation' : 'utilisateur.desactivation',
+            $request->user()->id,
+            'utilisateur',
+            $utilisateur->id,
+            [],
+        );
+
+        return response()->json($this->presenter($utilisateur->fresh()));
+    }
+
     private function presenter(Utilisateur $utilisateur): array
     {
         return [
