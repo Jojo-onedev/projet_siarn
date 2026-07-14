@@ -13,11 +13,15 @@ import ModulesSection from './pages/referentiels/ModulesSection';
 import EtudiantsSection from './pages/referentiels/EtudiantsSection';
 import PvListPage from './pages/pv/PvListPage';
 import PvDetailPage from './pages/pv/PvDetailPage';
+import MesNotesPage from './pages/portail/MesNotesPage';
+import MesReclamationsPage from './pages/portail/MesReclamationsPage';
+import ReclamationsPage from './pages/reclamations/ReclamationsPage';
 import { NAVIGATION } from './layout/navigation';
 
 const ROLES_REFERENTIELS = ['agent_scolarite', 'chef_departement', 'responsable_academique', 'directeur', 'admin'];
 const ROLES_PV = ['agent_scolarite', 'chef_departement', 'responsable_academique', 'directeur', 'admin'];
 const ROLES_VALIDATION = ['chef_departement', 'responsable_academique'];
+const ROLES_RECLAMATIONS_STAFF = ['agent_scolarite', 'chef_departement', 'responsable_academique', 'admin'];
 const ECRANS_A_VENIR = NAVIGATION.filter((item) => !item.implemente);
 
 export default function App() {
@@ -84,6 +88,31 @@ export default function App() {
                   titre="Dossiers à valider"
                   description="Procès-verbaux entièrement vérifiés, en attente de votre décision."
                 />
+              </ProtectedRoute>
+            )}
+          />
+
+          <Route
+            path="/mes-notes"
+            element={(
+              <ProtectedRoute roles={['etudiant']}>
+                <MesNotesPage />
+              </ProtectedRoute>
+            )}
+          />
+          <Route
+            path="/mes-reclamations"
+            element={(
+              <ProtectedRoute roles={['etudiant']}>
+                <MesReclamationsPage />
+              </ProtectedRoute>
+            )}
+          />
+          <Route
+            path="/reclamations"
+            element={(
+              <ProtectedRoute roles={ROLES_RECLAMATIONS_STAFF}>
+                <ReclamationsPage />
               </ProtectedRoute>
             )}
           />

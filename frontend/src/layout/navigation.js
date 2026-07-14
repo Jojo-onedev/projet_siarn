@@ -32,18 +32,21 @@ export const NAVIGATION = [
     label: 'Mes notes',
     to: '/mes-notes',
     epic: 'F6',
+    implemente: true,
     roles: ['etudiant'],
   },
   {
     label: 'Mes réclamations',
     to: '/mes-reclamations',
     epic: 'F6',
+    implemente: true,
     roles: ['etudiant'],
   },
   {
     label: 'Réclamations',
     to: '/reclamations',
     epic: 'F6',
+    implemente: true,
     roles: ['agent_scolarite', 'chef_departement', 'responsable_academique', 'admin'],
   },
   {
