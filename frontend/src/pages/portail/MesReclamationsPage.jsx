@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { listerMesReclamations, creerReclamation } from '../../api/reclamations';
+import { listerMesReclamations } from '../../api/portail';
+import { creerReclamation } from '../../api/reclamations';
 import { Tableau } from '../../components/ui/Tableau';
 import { Badge } from '../../components/ui/Badge';
 import { Bouton } from '../../components/ui/Bouton';
