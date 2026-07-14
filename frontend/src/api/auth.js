@@ -13,3 +13,6 @@ export const confirmerMfa = (code) => client.post('/auth/mfa/confirmer', { code 
 export const deconnexion = () => client.post('/auth/deconnexion', {});
 
 export const moi = () => client.get('/auth/moi');
+
+export const changerMotDePasse = (motDePasseActuel, nouveauMotDePasse) =>
+  client.put('/auth/mot-de-passe', { mot_de_passe_actuel: motDePasseActuel, nouveau_mot_de_passe: nouveauMotDePasse });

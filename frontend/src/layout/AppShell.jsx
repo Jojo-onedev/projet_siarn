@@ -4,6 +4,7 @@ import { useAuth } from '../auth/AuthContext';
 import { navigationPourRole } from './navigation';
 import { Bouton } from '../components/ui/Bouton';
 import { IconeNav } from './icones';
+import { ChangerMotDePasseModale } from './ChangerMotDePasseModale';
 import './AppShell.css';
 
 const LIBELLES_ROLES = {
@@ -19,6 +20,7 @@ const LIBELLES_ROLES = {
 export function AppShell() {
   const { utilisateur, seDeconnecter } = useAuth();
   const [menuOuvert, setMenuOuvert] = useState(false);
+  const [modaleMotDePasseOuverte, setModaleMotDePasseOuverte] = useState(false);
   const location = useLocation();
   const items = navigationPourRole(utilisateur.role);
   const itemCourant = items.find((item) => item.to === location.pathname);
@@ -50,9 +52,14 @@ export function AppShell() {
             <span className="app-shell__nom-utilisateur">{utilisateur.prenom} {utilisateur.nom}</span>
             <span className="app-shell__role">{LIBELLES_ROLES[utilisateur.role] ?? utilisateur.role}</span>
           </div>
+          <Bouton variante="fantome" onClick={() => setModaleMotDePasseOuverte(true)}>Mot de passe</Bouton>
           <Bouton variante="fantome" onClick={seDeconnecter}>Déconnexion</Bouton>
         </div>
       </header>
+
+      {modaleMotDePasseOuverte ? (
+        <ChangerMotDePasseModale onFermer={() => setModaleMotDePasseOuverte(false)} />
+      ) : null}
 
       <div className="app-shell__corps">
         {menuOuvert ? (

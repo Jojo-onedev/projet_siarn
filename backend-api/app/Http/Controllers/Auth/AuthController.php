@@ -84,6 +84,26 @@ class AuthController extends Controller
         return response()->json($this->presenterUtilisateur($request->user()));
     }
 
+    public function changerMotDePasse(Request $request)
+    {
+        $donnees = $request->validate([
+            'mot_de_passe_actuel' => ['required', 'string'],
+            'nouveau_mot_de_passe' => ['required', 'string', 'min:12'],
+        ]);
+
+        try {
+            $this->authentificationService->changerMotDePasse(
+                $request->user(),
+                $donnees['mot_de_passe_actuel'],
+                $donnees['nouveau_mot_de_passe'],
+            );
+        } catch (AuthentificationException $e) {
+            return response()->json(['message' => $e->getMessage()], $e->statutHttp);
+        }
+
+        return response()->json(['message' => 'Mot de passe modifie avec succes.']);
+    }
+
     private function presenterUtilisateur($utilisateur): array
     {
         return [

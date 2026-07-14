@@ -64,26 +64,46 @@ class UtilisateurController extends Controller
      * prend effet immediatement : JwtGuard::user() rejette deja tout token
      * dont l'utilisateur associe a `actif=false` (aucune revocation de
      * session supplementaire necessaire ici).
+     *
+     * `nouveau_mot_de_passe` (optionnel) : reinitialisation forcee par
+     * l'admin - seul recours pour un utilisateur ayant perdu son mot de
+     * passe, aucune route de reinitialisation self-service n'existant en V1
+     * (pas de messagerie integree pour un lien de reinitialisation).
      */
     public function update(Request $request, Utilisateur $utilisateur)
     {
         $donnees = $request->validate([
-            'actif' => ['required', 'boolean'],
+            'actif' => ['sometimes', 'boolean'],
+            'nouveau_mot_de_passe' => ['sometimes', 'string', 'min:12'],
         ]);
 
-        if ($utilisateur->id === $request->user()->id && ! $donnees['actif']) {
+        if (array_key_exists('actif', $donnees) && $utilisateur->id === $request->user()->id && ! $donnees['actif']) {
             return response()->json(['message' => 'Vous ne pouvez pas desactiver votre propre compte.'], 422);
         }
 
-        $utilisateur->update($donnees);
+        if (array_key_exists('actif', $donnees)) {
+            $utilisateur->actif = $donnees['actif'];
+            $this->journalAudit->enregistrer(
+                $donnees['actif'] ? 'utilisateur.reactivation' : 'utilisateur.desactivation',
+                $request->user()->id,
+                'utilisateur',
+                $utilisateur->id,
+                [],
+            );
+        }
 
-        $this->journalAudit->enregistrer(
-            $donnees['actif'] ? 'utilisateur.reactivation' : 'utilisateur.desactivation',
-            $request->user()->id,
-            'utilisateur',
-            $utilisateur->id,
-            [],
-        );
+        if (array_key_exists('nouveau_mot_de_passe', $donnees)) {
+            $utilisateur->mot_de_passe_hash = Hash::make($donnees['nouveau_mot_de_passe']);
+            $this->journalAudit->enregistrer(
+                'utilisateur.reinitialisation_mot_de_passe',
+                $request->user()->id,
+                'utilisateur',
+                $utilisateur->id,
+                [],
+            );
+        }
+
+        $utilisateur->save();
 
         return response()->json($this->presenter($utilisateur->fresh()));
     }

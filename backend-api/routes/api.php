@@ -30,6 +30,9 @@ Route::middleware('throttle:auth')->group(function () {
 Route::middleware('auth:api')->group(function () {
     Route::post('/auth/deconnexion', [AuthController::class, 'deconnexion']);
     Route::get('/auth/moi', [AuthController::class, 'moi']);
+    // Pas de mfa.requise : un role sans MFA obligatoire (etudiant/enseignant)
+    // doit pouvoir changer son mot de passe comme les autres.
+    Route::put('/auth/mot-de-passe', [AuthController::class, 'changerMotDePasse']);
 
     // Enrolement MFA : accessible meme si le MFA n'est pas encore configure
     // (c'est justement le but), donc PAS derriere 'mfa.requise'.

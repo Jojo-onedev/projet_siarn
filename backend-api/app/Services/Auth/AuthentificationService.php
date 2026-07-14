@@ -123,6 +123,25 @@ class AuthentificationService
         $this->journalAudit->enregistrer('utilisateur.deconnexion', $utilisateur->id, 'utilisateur', $utilisateur->id);
     }
 
+    /**
+     * Changement de mot de passe self-service - jusqu'ici absent (trouve en
+     * revue manuelle) : une fois le mot de passe defini a la creation du
+     * compte, aucune route ne permettait a l'utilisateur de le changer
+     * lui-meme. Exige le mot de passe actuel (§13.1, pas de changement sur
+     * la seule base d'un jeton d'acces deja valide).
+     */
+    public function changerMotDePasse(Utilisateur $utilisateur, string $motDePasseActuel, string $nouveauMotDePasse): void
+    {
+        if (! Hash::check($motDePasseActuel, $utilisateur->getAuthPassword())) {
+            throw new AuthentificationException('Mot de passe actuel incorrect.', 422);
+        }
+
+        $utilisateur->mot_de_passe_hash = Hash::make($nouveauMotDePasse);
+        $utilisateur->save();
+
+        $this->journalAudit->enregistrer('utilisateur.changement_mot_de_passe', $utilisateur->id, 'utilisateur', $utilisateur->id);
+    }
+
     private function enregistrerEchec(Utilisateur $utilisateur): void
     {
         $utilisateur->tentatives_echec += 1;
