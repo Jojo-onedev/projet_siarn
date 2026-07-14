@@ -11,10 +11,13 @@ import ComingSoonPage from './pages/ComingSoonPage';
 import FilieresSection from './pages/referentiels/FilieresSection';
 import ModulesSection from './pages/referentiels/ModulesSection';
 import EtudiantsSection from './pages/referentiels/EtudiantsSection';
+import PvListPage from './pages/pv/PvListPage';
+import PvDetailPage from './pages/pv/PvDetailPage';
 import { NAVIGATION } from './layout/navigation';
 
 const ROLES_REFERENTIELS = ['agent_scolarite', 'chef_departement', 'responsable_academique', 'directeur', 'admin'];
-const ECRANS_A_VENIR = NAVIGATION.filter((item) => item.to !== '/' && item.to !== '/referentiels');
+const ROLES_PV = ['agent_scolarite', 'chef_departement', 'responsable_academique', 'directeur', 'admin'];
+const ECRANS_A_VENIR = NAVIGATION.filter((item) => !item.implemente);
 
 export default function App() {
   return (
@@ -53,6 +56,23 @@ export default function App() {
             <Route path="modules" element={<ModulesSection />} />
             <Route path="etudiants" element={<EtudiantsSection />} />
           </Route>
+
+          <Route
+            path="/pv"
+            element={(
+              <ProtectedRoute roles={ROLES_PV}>
+                <PvListPage />
+              </ProtectedRoute>
+            )}
+          />
+          <Route
+            path="/pv/:id"
+            element={(
+              <ProtectedRoute roles={ROLES_PV}>
+                <PvDetailPage />
+              </ProtectedRoute>
+            )}
+          />
 
           {ECRANS_A_VENIR.map((item) => (
             <Route key={item.to} path={item.to} element={<ComingSoonPage />} />

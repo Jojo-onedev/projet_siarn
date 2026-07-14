@@ -8,7 +8,11 @@ export const NAVIGATION = [
     label: 'Procès-verbaux',
     to: '/pv',
     epic: 'F3/F4',
-    roles: ['agent_scolarite', 'enseignant', 'chef_departement', 'responsable_academique', 'directeur', 'admin'],
+    implemente: true,
+    // Note : GET /pv et /pv/{id} n'incluent pas 'enseignant' cote backend
+    // (routes/api.php) - seul 'signaler-fraude' (sur un note_id deja connu)
+    // leur est ouvert. Ecart signale, pas corrige silencieusement ici.
+    roles: ['agent_scolarite', 'chef_departement', 'responsable_academique', 'directeur', 'admin'],
   },
   {
     label: 'Validation',

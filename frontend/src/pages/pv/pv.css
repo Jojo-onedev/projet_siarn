@@ -1,0 +1,131 @@
+.pv-import__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.pv-import__ligne {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-paper-100);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+
+.pv-detail__retour {
+  display: inline-block;
+  margin-bottom: var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-accent-600);
+}
+
+.pv-detail__entete {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.pv-detail__section {
+  margin-bottom: var(--space-7);
+}
+
+.pv-detail__section h2 {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-4);
+}
+
+.pv-champs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+
+.pv-champs__carte {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.pv-champs__entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.pv-champs__nom {
+  font-weight: 600;
+  text-transform: capitalize;
+  font-size: var(--text-sm);
+}
+
+.pv-champs__valeur {
+  font-family: 'Work Sans', monospace;
+  color: var(--color-ink-900);
+  word-break: break-word;
+}
+
+.pv-champs__meta {
+  font-size: var(--text-xs);
+  color: var(--color-ink-500);
+}
+
+.pv-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pv-timeline__item {
+  display: flex;
+  gap: var(--space-4);
+  padding-bottom: var(--space-5);
+  position: relative;
+}
+
+.pv-timeline__item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 16px;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-paper-300);
+}
+
+.pv-timeline__point {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-accent-600);
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.pv-timeline__statut {
+  font-weight: 600;
+  font-size: var(--text-sm);
+}
+
+.pv-timeline__date {
+  font-size: var(--text-xs);
+  color: var(--color-ink-500);
+}
+
+.pv-timeline__motif {
+  font-size: var(--text-sm);
+  color: var(--color-ink-700);
+  margin-top: var(--space-1);
+}
