@@ -69,9 +69,23 @@ async function requete(chemin, { method = 'GET', corps, entetes = {}, estMultipa
   return donnees;
 }
 
+// Reponse binaire (image) - pas de parsing JSON, cf. PvController::image.
+async function requeteBlob(chemin) {
+  const token = tokenGetter();
+  const reponse = await fetch(`${BASE_URL}${chemin}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!reponse.ok) {
+    if (reponse.status === 401 && token) onUnauthorized();
+    throw new ErreurApi('Image indisponible.', { statut: reponse.status });
+  }
+  return reponse.blob();
+}
+
 export const client = {
   get: (chemin) => requete(chemin),
   post: (chemin, corps) => requete(chemin, { method: 'POST', corps }),
   put: (chemin, corps) => requete(chemin, { method: 'PUT', corps }),
   postMultipart: (chemin, formData) => requete(chemin, { method: 'POST', corps: formData, estMultipart: true }),
+  getBlob: (chemin) => requeteBlob(chemin),
 };

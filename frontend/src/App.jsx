@@ -17,6 +17,7 @@ import { NAVIGATION } from './layout/navigation';
 
 const ROLES_REFERENTIELS = ['agent_scolarite', 'chef_departement', 'responsable_academique', 'directeur', 'admin'];
 const ROLES_PV = ['agent_scolarite', 'chef_departement', 'responsable_academique', 'directeur', 'admin'];
+const ROLES_VALIDATION = ['chef_departement', 'responsable_academique'];
 const ECRANS_A_VENIR = NAVIGATION.filter((item) => !item.implemente);
 
 export default function App() {
@@ -70,6 +71,19 @@ export default function App() {
             element={(
               <ProtectedRoute roles={ROLES_PV}>
                 <PvDetailPage />
+              </ProtectedRoute>
+            )}
+          />
+
+          <Route
+            path="/validation"
+            element={(
+              <ProtectedRoute roles={ROLES_VALIDATION}>
+                <PvListPage
+                  statutFixe="en_validation"
+                  titre="Dossiers à valider"
+                  description="Procès-verbaux entièrement vérifiés, en attente de votre décision."
+                />
               </ProtectedRoute>
             )}
           />

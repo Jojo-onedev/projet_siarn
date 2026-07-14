@@ -13,14 +13,14 @@ import PvImportModal from './PvImportModal';
 import '../referentiels/referentiels.css';
 import './pv.css';
 
-export default function PvListPage() {
+export default function PvListPage({ statutFixe, titre, description }) {
   const { utilisateur } = useAuth();
   const navigate = useNavigate();
-  const peutImporter = utilisateur.role === 'agent_scolarite';
+  const peutImporter = utilisateur.role === 'agent_scolarite' && !statutFixe;
 
   const [donnees, setDonnees] = useState({ donnees: [], total: 0, page: 1, dernieres_pages: 1 });
   const [filieres, setFilieres] = useState([]);
-  const [statut, setStatut] = useState('');
+  const [statut, setStatut] = useState(statutFixe ?? '');
   const [filiereId, setFiliereId] = useState('');
   const [page, setPage] = useState(1);
   const [chargement, setChargement] = useState(true);
@@ -55,16 +55,18 @@ export default function PvListPage() {
     <div>
       <div className="page-entete">
         <p className="page-entete__eyebrow">Procès-verbaux</p>
-        <h1>Suivi des PV</h1>
-        <p>Import, prétraitement et extraction OCR sont déclenchés automatiquement à l'import.</p>
+        <h1>{titre ?? 'Suivi des PV'}</h1>
+        <p>{description ?? "Import, prétraitement et extraction OCR sont déclenchés automatiquement à l'import."}</p>
       </div>
 
       <div className="section-entete">
         <div className="filtres">
-          <Select label="Statut" value={statut} onChange={(e) => { setPage(1); setStatut(e.target.value); }}>
-            <option value="">Tous</option>
-            {Object.entries(STATUTS_PV).map(([valeur, { libelle }]) => <option key={valeur} value={valeur}>{libelle}</option>)}
-          </Select>
+          {!statutFixe ? (
+            <Select label="Statut" value={statut} onChange={(e) => { setPage(1); setStatut(e.target.value); }}>
+              <option value="">Tous</option>
+              {Object.entries(STATUTS_PV).map(([valeur, { libelle }]) => <option key={valeur} value={valeur}>{libelle}</option>)}
+            </Select>
+          ) : null}
           <Select label="Filière" value={filiereId} onChange={(e) => { setPage(1); setFiliereId(e.target.value); }}>
             <option value="">Toutes</option>
             {filieres.map((f) => <option key={f.id} value={f.id}>{f.nom}</option>)}

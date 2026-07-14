@@ -18,6 +18,7 @@ export const NAVIGATION = [
     label: 'Validation',
     to: '/validation',
     epic: 'F5',
+    implemente: true,
     roles: ['chef_departement', 'responsable_academique'],
   },
   {

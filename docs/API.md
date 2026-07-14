@@ -40,6 +40,7 @@ Toutes les routes ci-dessous exigent en plus `mfa.requise` (bloque les rôles à
 | Méthode | Route | RBAC | Notes |
 |---|---|---|---|
 | GET | `/pv`, `/pv/{id}` | `agent_scolarite, chef_departement, responsable_academique, directeur, admin` | |
+| GET | `/pv/{id}/image?type=original\|pretraitee` | idem | Ajouté lors du frontend F4 (écart initial : aucune route ne servait l'image, alors que §7.5 exige l'affichage de l'image à côté de la valeur extraite). Streaming authentifié direct depuis le disque `pv` (jamais d'URL publique, `serve=false`) ; `type` par défaut `original`. |
 | GET | `/pv/{id}/notes` | idem | |
 | POST | `/pv/import` | **`agent_scolarite` uniquement** (§5 : aucun autre rôle, pas même admin) | Multipart, `fichiers[]`. Déclenche synchrone : prétraitement OpenCV → segmentation → extraction OCR (modèle actif) → transition `soumis → en_traitement → en_verification` (ou `erreur_extraction` si confiance moyenne sous le seuil plancher ou modèle absent). |
 | POST | `/pv/{id}/verifier` | `agent_scolarite` uniquement | Corrections champ par champ ; transition automatique vers `en_validation` seulement quand **tous** les champs ont une `valeur_validee`. Toute correction divergente de l'OCR brut alimente la boucle de rétroaction corpus (§8.4). |

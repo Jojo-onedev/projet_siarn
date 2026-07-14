@@ -9,6 +9,8 @@ export function listerPv(params = {}) {
 
 export const obtenirPv = (id) => client.get(`/pv/${id}`);
 
+export const obtenirImagePv = (id, type = 'original') => client.getBlob(`/pv/${id}/image?type=${type}`);
+
 export const listerNotesPv = (id) => client.get(`/pv/${id}/notes`);
 
 export function importerPv(fichiers, champs) {

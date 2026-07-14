@@ -69,6 +69,27 @@ class PvController extends Controller
         ]);
     }
 
+    /**
+     * §7.5 : sert l'image du PV (original scanne ou version pretraitee) pour
+     * l'ecran de verification humaine - jamais expose en URL publique
+     * (disque 'pv', serve=false), uniquement via cette route authentifiee et
+     * soumise au meme RBAC que la consultation du PV (routes/api.php).
+     */
+    public function image(Request $request, ProcesVerbal $pv)
+    {
+        $type = $request->query('type', 'original');
+        $chemin = match ($type) {
+            'pretraitee' => $pv->chemin_image_pretraitee,
+            default => $pv->chemin_fichier,
+        };
+
+        if (! $chemin || ! Storage::disk('pv')->exists($chemin)) {
+            abort(404, "Image introuvable pour ce PV (type: {$type}).");
+        }
+
+        return Storage::disk('pv')->response($chemin);
+    }
+
     public function importer(Request $request)
     {
         $config = config('siarn.import_pv');

@@ -78,6 +78,7 @@ Route::middleware('auth:api')->group(function () {
         Route::middleware('role:agent_scolarite,chef_departement,responsable_academique,directeur,admin')->group(function () {
             Route::get('/pv', [PvController::class, 'index']);
             Route::get('/pv/{pv}', [PvController::class, 'show']);
+            Route::get('/pv/{pv}/image', [PvController::class, 'image']);
             Route::get('/pv/{pv}/notes', [NoteController::class, 'index']);
         });
 
