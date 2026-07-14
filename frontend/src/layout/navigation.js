@@ -67,18 +67,21 @@ export const NAVIGATION = [
     label: 'Corpus OCR',
     to: '/corpus',
     epic: 'F8',
+    implemente: true,
     roles: ['agent_scolarite', 'admin'],
   },
   {
     label: 'Modèles OCR',
     to: '/modeles-ocr',
     epic: 'F8',
+    implemente: true,
     roles: ['admin'],
   },
   {
     label: 'Utilisateurs',
     to: '/utilisateurs',
     epic: 'F8',
+    implemente: true,
     roles: ['admin'],
   },
 ];

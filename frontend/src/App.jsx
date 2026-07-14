@@ -18,6 +18,9 @@ import MesReclamationsPage from './pages/portail/MesReclamationsPage';
 import ReclamationsPage from './pages/reclamations/ReclamationsPage';
 import TableauxDeBordPage from './pages/dashboard/TableauxDeBordPage';
 import AuditPage from './pages/audit/AuditPage';
+import CorpusPage from './pages/corpus/CorpusPage';
+import ModelesOcrPage from './pages/ocr/ModelesOcrPage';
+import UtilisateursPage from './pages/utilisateurs/UtilisateursPage';
 import { NAVIGATION } from './layout/navigation';
 
 const ROLES_REFERENTIELS = ['agent_scolarite', 'chef_departement', 'responsable_academique', 'directeur', 'admin'];
@@ -26,6 +29,7 @@ const ROLES_VALIDATION = ['chef_departement', 'responsable_academique'];
 const ROLES_RECLAMATIONS_STAFF = ['agent_scolarite', 'chef_departement', 'responsable_academique', 'admin'];
 const ROLES_DASHBOARD = ['chef_departement', 'responsable_academique', 'directeur'];
 const ROLES_AUDIT = ['admin', 'directeur'];
+const ROLES_CORPUS = ['agent_scolarite', 'admin'];
 const ECRANS_A_VENIR = NAVIGATION.filter((item) => !item.implemente);
 
 export default function App() {
@@ -134,6 +138,31 @@ export default function App() {
             element={(
               <ProtectedRoute roles={ROLES_AUDIT}>
                 <AuditPage />
+              </ProtectedRoute>
+            )}
+          />
+
+          <Route
+            path="/corpus"
+            element={(
+              <ProtectedRoute roles={ROLES_CORPUS}>
+                <CorpusPage />
+              </ProtectedRoute>
+            )}
+          />
+          <Route
+            path="/modeles-ocr"
+            element={(
+              <ProtectedRoute roles={['admin']}>
+                <ModelesOcrPage />
+              </ProtectedRoute>
+            )}
+          />
+          <Route
+            path="/utilisateurs"
+            element={(
+              <ProtectedRoute roles={['admin']}>
+                <UtilisateursPage />
               </ProtectedRoute>
             )}
           />
