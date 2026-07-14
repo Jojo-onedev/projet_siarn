@@ -7,11 +7,22 @@ import { useAuth } from '../auth/AuthContext';
 import { ErreurApi } from '../api/client';
 
 export default function MfaVerificationPage() {
-  const { mfaEnAttente, validerMfa, annulerMfa } = useAuth();
+  const { mfaEnAttente, estConnecte, validerMfa, annulerMfa } = useAuth();
   const [code, setCode] = useState('');
   const [erreur, setErreur] = useState(null);
   const [enCours, setEnCours] = useState(false);
 
+  // Bug reel corrige ici : validerMfa() reussi met a jour token/utilisateur
+  // ET remet mfaToken a null (donc mfaEnAttente=false) dans le meme lot de
+  // rendu que son propre navigate('/'). Si ce composant se re-rend avant que
+  // le changement de route ne soit effectif, l'ancienne condition
+  // "if (!mfaEnAttente) -> /connexion" gagnait la course et renvoyait
+  // l'utilisateur a la page de connexion malgre un code MFA valide. Verifier
+  // estConnecte D'ABORD supprime cette course : une fois authentifie, on ne
+  // revient plus jamais vers /connexion depuis cet ecran.
+  if (estConnecte) {
+    return <Navigate to="/" replace />;
+  }
   if (!mfaEnAttente) {
     return <Navigate to="/connexion" replace />;
   }
