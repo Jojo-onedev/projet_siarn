@@ -5,15 +5,16 @@
   justify-content: center;
   gap: var(--space-2);
   min-height: var(--tap-target-min);
-  padding: var(--space-3) var(--space-5);
-  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-pill);
   border: 1px solid transparent;
   font-weight: 600;
   font-size: var(--text-sm);
   letter-spacing: 0.01em;
   transition: transform var(--duration-fast) var(--ease-standard),
               background-color var(--duration-fast) var(--ease-standard),
-              border-color var(--duration-fast) var(--ease-standard);
+              border-color var(--duration-fast) var(--ease-standard),
+              box-shadow var(--duration-fast) var(--ease-standard);
 }
 
 .bouton:active:not(:disabled) {
@@ -27,11 +28,13 @@
 
 .bouton--primaire {
   background: var(--color-accent-600);
-  color: var(--color-paper-100);
+  color: #ffffff;
+  box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--color-accent-600) 70%, transparent);
 }
 
 .bouton--primaire:hover:not(:disabled) {
   background: var(--color-accent-700);
+  box-shadow: 0 10px 24px -8px color-mix(in srgb, var(--color-accent-700) 75%, transparent);
 }
 
 .bouton--secondaire {

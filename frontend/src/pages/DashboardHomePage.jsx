@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { navigationPourRole } from '../layout/navigation';
+import { IconeNav } from '../layout/icones';
 import './pages.css';
+
+const TEINTES = ['accent', 'success', 'warning', 'info'];
 
 export default function DashboardHomePage() {
   const { utilisateur } = useAuth();
@@ -19,8 +22,11 @@ export default function DashboardHomePage() {
       </div>
 
       <div className="grille-cartes">
-        {raccourcis.map((item) => (
+        {raccourcis.map((item, index) => (
           <Link key={item.to} to={item.to} className="carte-lien">
+            <span className={`carte-lien__icone carte-lien__icone--${TEINTES[index % TEINTES.length]}`}>
+              <IconeNav chemin={item.to} />
+            </span>
             <span className="carte-lien__epic">{item.epic}</span>
             <h2>{item.label}</h2>
           </Link>

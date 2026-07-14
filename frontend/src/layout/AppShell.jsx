@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { navigationPourRole } from './navigation';
 import { Bouton } from '../components/ui/Bouton';
+import { IconeNav } from './icones';
 import './AppShell.css';
 
 const LIBELLES_ROLES = {
@@ -77,7 +78,8 @@ export function AppShell() {
                   className={({ isActive }) => `app-shell__lien ${isActive ? 'app-shell__lien--actif' : ''}`}
                   onClick={() => setMenuOuvert(false)}
                 >
-                  {item.label}
+                  <span className="app-shell__lien-icone"><IconeNav chemin={item.to} /></span>
+                  <span>{item.label}</span>
                 </NavLink>
               </li>
             ))}

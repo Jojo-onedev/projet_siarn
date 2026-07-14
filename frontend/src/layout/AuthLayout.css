@@ -2,18 +2,18 @@
   min-height: 100dvh;
   display: grid;
   grid-template-columns: 1fr;
+  background: var(--color-paper-100);
 }
 
 .auth-mise-en-page__panneau {
   display: none;
 }
 
-/* Le panneau editorial n'apparait qu'a partir de la largeur tablette :
-   sur mobile, seule la carte de formulaire est affichee (§ responsive,
-   PRD_FRONTEND.md). */
+/* Le panneau violet n'apparait qu'a partir de la largeur tablette : sur
+   mobile, seule la carte de formulaire est affichee. */
 @media (min-width: 900px) {
   .auth-mise-en-page {
-    grid-template-columns: minmax(360px, 38%) 1fr;
+    grid-template-columns: minmax(380px, 40%) 1fr;
   }
 
   .auth-mise-en-page__panneau {
@@ -21,20 +21,33 @@
     flex-direction: column;
     justify-content: space-between;
     padding: var(--space-8) var(--space-7);
-    background: linear-gradient(160deg, var(--color-ink-900) 0%, var(--color-ink-700) 100%);
-    color: var(--color-paper-100);
+    background: linear-gradient(155deg, var(--color-accent-900) 0%, var(--color-accent-600) 100%);
+    color: #ffffff;
     position: relative;
     overflow: hidden;
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
   }
 
-  .auth-mise-en-page__panneau::after {
-    content: '';
+  .auth-mise-en-page__forme {
     position: absolute;
-    inset: auto -20% -30% auto;
-    width: 60%;
-    aspect-ratio: 1;
     border-radius: 50%;
-    background: radial-gradient(circle, color-mix(in srgb, var(--color-accent-600) 55%, transparent) 0%, transparent 70%);
+    z-index: 0;
+  }
+
+  .auth-mise-en-page__forme--1 {
+    width: 280px;
+    height: 280px;
+    right: -100px;
+    top: -80px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .auth-mise-en-page__forme--2 {
+    width: 360px;
+    height: 360px;
+    left: -160px;
+    bottom: -160px;
+    background: rgba(255, 255, 255, 0.06);
   }
 }
 
@@ -62,40 +75,32 @@
   height: 44px;
   border-radius: var(--radius-md);
   background: var(--color-accent-600);
-  color: var(--color-paper-100);
+  color: #ffffff;
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
   font-size: var(--text-lg);
   flex-shrink: 0;
 }
 
+@media (min-width: 900px) {
+  .auth-mise-en-page__panneau .auth-mise-en-page__monogramme {
+    background: rgba(255, 255, 255, 0.16);
+  }
+}
+
 .auth-mise-en-page__nom {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
   font-size: var(--text-lg);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 .auth-mise-en-page__accroche {
   font-family: var(--font-display);
   font-size: var(--text-xl);
-  font-style: italic;
-  font-weight: 400;
+  font-weight: 500;
   line-height: var(--leading-tight);
-  max-width: 30ch;
-  z-index: 1;
-}
-
-.auth-mise-en-page__accroche em {
-  color: var(--color-accent-100);
-  font-style: italic;
-}
-
-.auth-mise-en-page__trait {
-  width: 64px;
-  height: 3px;
-  background: var(--color-accent-500);
-  border-radius: var(--radius-pill);
+  max-width: 28ch;
   z-index: 1;
 }
 
@@ -138,6 +143,7 @@
 
 .auth-mise-en-page__titre {
   font-size: var(--text-2xl);
+  font-weight: 700;
   margin-bottom: var(--space-2);
 }
 
@@ -164,13 +170,14 @@
   width: 100%;
   text-align: center;
   font-family: var(--font-display);
+  font-weight: 600;
   font-size: var(--text-2xl);
   letter-spacing: 0.35em;
   padding: var(--space-4);
 }
 
 .auth-secret {
-  background: var(--color-paper-200);
+  background: var(--color-accent-100);
   border: 1px solid var(--color-paper-300);
   border-radius: var(--radius-md);
   padding: var(--space-4);
@@ -185,5 +192,5 @@
   letter-spacing: 0.08em;
   word-break: break-all;
   font-size: var(--text-md);
-  color: var(--color-ink-900);
+  color: var(--color-accent-700);
 }

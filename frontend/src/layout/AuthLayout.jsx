@@ -9,10 +9,11 @@ export function AuthLayout({ eyebrow, titre, sousTitre, children }) {
           <span className="auth-mise-en-page__nom">SIARN</span>
         </div>
         <p className="auth-mise-en-page__accroche">
-          Le report de notes, <em>de la salle d'examen au relevé officiel</em>,
+          Le report de notes, de la salle d'examen au relevé officiel,
           sans ressaisie ni perte de traçabilité.
         </p>
-        <div className="auth-mise-en-page__trait" />
+        <div className="auth-mise-en-page__forme auth-mise-en-page__forme--1" />
+        <div className="auth-mise-en-page__forme auth-mise-en-page__forme--2" />
       </aside>
 
       <main className="auth-mise-en-page__contenu">

@@ -1,43 +1,43 @@
-/* Design tokens — direction "éditorial institutionnel".
-   Une seule teinte dominante (encre), un seul accent (terre cuite), un
-   système neutre chaud (papier) — jamais de palette équilibrée à parts
-   égales (cf. .agents/frontend-design). Tout passe par ces variables :
-   aucune couleur/typo/espacement en dur ailleurs dans le code. */
+/* Design tokens — direction "dashboard moderne, chaleureux" (references
+   utilisateur : sidebar violette + cartes blanches arrondies, badges de
+   statut colores, typographie ronde et amicale). Tout passe par ces
+   variables : aucune couleur/typo/espacement en dur ailleurs dans le code. */
 
 :root {
   color-scheme: light;
 
-  /* Couleurs — encre (texte/surfaces sombres) */
-  --color-ink-900: #14171f;
-  --color-ink-700: #262c3a;
-  --color-ink-500: #4a5468;
-  --color-ink-300: #8891a3;
-  --color-ink-100: #d6dae2;
+  /* Couleurs — encre (texte) */
+  --color-ink-900: #1e1b2e;
+  --color-ink-700: #383353;
+  --color-ink-500: #6b6789;
+  --color-ink-300: #a6a2c0;
+  --color-ink-100: #e2e0f0;
 
-  /* Couleurs — papier (fond chaud, jamais blanc clinique) */
-  --color-paper-100: #faf7f1;
-  --color-paper-200: #f3ede2;
-  --color-paper-300: #e8dfd0;
+  /* Couleurs — fond neutre tres clair, legerement teinte violet */
+  --color-paper-100: #f6f5fc;
+  --color-paper-200: #eeecf9;
+  --color-paper-300: #e2ddf4;
   --color-surface: #ffffff;
 
-  /* Accent — terre cuite, unique et assumé */
-  --color-accent-700: #7a2f1a;
-  --color-accent-600: #a8451f;
-  --color-accent-500: #c25a2e;
-  --color-accent-100: #f4ddce;
+  /* Accent — violet, unique et assume */
+  --color-accent-900: #241a4d;
+  --color-accent-700: #4c37a8;
+  --color-accent-600: #6947e0;
+  --color-accent-500: #8468ec;
+  --color-accent-100: #ece5fd;
 
-  /* Statuts fonctionnels (distincts de l'accent, usage sémantique uniquement) */
-  --color-success-600: #2f6d4f;
-  --color-success-100: #dcece3;
-  --color-danger-600: #a3312a;
-  --color-danger-100: #f6dcda;
-  --color-warning-600: #97650f;
-  --color-warning-100: #f6e8ce;
-  --color-info-600: #2f5d7d;
-  --color-info-100: #dbe7ee;
+  /* Statuts fonctionnels (badges, distincts de l'accent) */
+  --color-success-600: #23985f;
+  --color-success-100: #dcf5e8;
+  --color-danger-600: #d64571;
+  --color-danger-100: #fce3ec;
+  --color-warning-600: #c98a1c;
+  --color-warning-100: #fbeed3;
+  --color-info-600: #2f7cc4;
+  --color-info-100: #e2f0fc;
 
-  /* Typographie */
-  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  /* Typographie — geometrique et ronde (accueil/titres), lisible (corps) */
+  --font-display: 'Poppins', 'Segoe UI Rounded', system-ui, sans-serif;
   --font-body: 'Work Sans', 'Segoe UI', system-ui, sans-serif;
 
   --text-xs: 0.75rem;
@@ -49,7 +49,7 @@
   --text-2xl: 2.25rem;
   --text-3xl: 3rem;
 
-  --leading-tight: 1.15;
+  --leading-tight: 1.2;
   --leading-normal: 1.5;
 
   /* Espacements (base 8px) */
@@ -62,16 +62,16 @@
   --space-7: 3rem;
   --space-8: 4rem;
 
-  /* Rayons */
-  --radius-sm: 4px;
-  --radius-md: 10px;
-  --radius-lg: 18px;
+  /* Rayons — genereux, cartes et boutons arrondis */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
   --radius-pill: 999px;
 
-  /* Ombres — teintées encre, jamais gris neutre générique */
-  --shadow-sm: 0 1px 2px rgba(20, 23, 31, 0.08);
-  --shadow-md: 0 8px 24px -8px rgba(20, 23, 31, 0.18);
-  --shadow-lg: 0 24px 48px -16px rgba(20, 23, 31, 0.28);
+  /* Ombres — teintees violet, douces */
+  --shadow-sm: 0 2px 6px rgba(36, 26, 77, 0.06);
+  --shadow-md: 0 12px 28px -10px rgba(36, 26, 77, 0.18);
+  --shadow-lg: 0 28px 56px -18px rgba(36, 26, 77, 0.26);
 
   /* Mouvement — sobre et intentionnel */
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
