@@ -53,12 +53,14 @@ export const NAVIGATION = [
     label: 'Tableaux de bord',
     to: '/tableaux-de-bord',
     epic: 'F7',
+    implemente: true,
     roles: ['chef_departement', 'responsable_academique', 'directeur'],
   },
   {
     label: 'Journal d\'audit',
     to: '/audit',
     epic: 'F7',
+    implemente: true,
     roles: ['admin', 'directeur'],
   },
   {
