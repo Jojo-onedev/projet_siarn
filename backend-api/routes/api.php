@@ -15,6 +15,7 @@ use App\Http\Controllers\Reclamations\ReclamationController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Audit\AuditController;
 use App\Http\Controllers\Portail\EtudiantPortailController;
+use App\Http\Controllers\Portail\EnseignantPortailController;
 use Illuminate\Support\Facades\Route;
 
 // §7.1 Gestion des utilisateurs et des acces (E1). Routes publiques minimales
@@ -130,8 +131,13 @@ Route::middleware('auth:api')->group(function () {
 
         // §5 RBAC : "Verifier son propre PV numerise (lecture + signalement
         // fraude)" -> Enseignant uniquement (scoping par module verifie dans le controleur).
+        // mes-modules/mes-modules/{id}/notes ajoutes ici : jusque-la, aucune
+        // route ne permettait a l'enseignant de retrouver un note_id, rendant
+        // signaler-fraude inatteignable en pratique (persona sans ecran).
         Route::middleware('role:enseignant')->group(function () {
             Route::post('/notes/{note}/signaler-fraude', [NoteController::class, 'signalerFraude']);
+            Route::get('/mes-modules', [EnseignantPortailController::class, 'mesModules']);
+            Route::get('/mes-modules/{module}/notes', [EnseignantPortailController::class, 'notesDuModule']);
         });
 
         // §7.6, E8 : declaration des absences (base du calcul de penalite automatique).

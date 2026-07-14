@@ -100,13 +100,24 @@ Connectez-vous avec `admin.smoke@siarn.local`, configurez le MFA.
 - [ ] **Modèles OCR** (`/modeles-ocr`) : consultez le modèle actif (CER/WER) — notez l'avertissement sur la non-représentativité de ces chiffres.
 - [ ] **Corpus OCR** (`/corpus`) : des documents y apparaissent déjà (la boucle de rétroaction a exporté automatiquement les corrections faites à l'étape 1). Ouvrez-en un, ajoutez une annotation. Testez « Répartir train/val/test ».
 
-### Étape 8 — Enseignant *(limitation connue, voir §4)*
+### Étape 8 — Enseignant
 
-Connectez-vous avec `enseignant.smoke@siarn.local` — vous constaterez que le tableau de bord est **vide**, sans section « Procès-verbaux » dans le menu. C'est normal, voir ci-dessous.
+Connectez-vous avec `enseignant.smoke@siarn.local` (pas de MFA à configurer) — référent du module GL301.
+
+- [ ] **Mes modules** (`/mes-modules`) : le module GL301 apparaît. Ouvrez-le pour voir les notes de vos étudiants (matricule, note, statut du PV).
+- [ ] Cliquez **« Signaler une fraude »** sur une note, renseignez un motif. Vérifiez que la note passe à 0/20 avec le motif tracé (rejouez ensuite avec le compte étudiant concerné ou en audit pour confirmer que c'est bien journalisé).
+
+### Étape 9 — Changer son mot de passe / gestion de compte (Administrateur)
+
+Toujours connecté en `admin.smoke@siarn.local` :
+
+- [ ] Bouton **« Mot de passe »** en haut de l'écran (n'importe quel rôle) : changez votre propre mot de passe (ancien + nouveau requis).
+- [ ] Dans **Utilisateurs**, testez **« Désactiver »** sur un compte de test — vérifiez qu'une tentative de connexion avec ce compte échoue immédiatement ensuite. Réactivez-le.
+- [ ] Testez **« Réinitialiser mot de passe »** et **« Réinitialiser MFA »** sur un compte de test (le mot de passe généré s'affiche une seule fois — notez-le si vous voulez vous reconnecter avec).
+- [ ] Dans **Référentiels → Filières/Modules**, ouvrez un élément existant en édition : une case « actif » permet de le désactiver.
 
 ## 4. Limitations connues (pas des bugs à signaler, déjà documentées dans le code)
 
-- **Enseignant** : l'API backend (`routes/api.php`) n'autorise ce rôle que sur `POST /notes/{id}/signaler-fraude` — aucune route ne lui permet de *lister* les PV ou notes pour y trouver l'identifiant nécessaire. Résultat : cette persona n'a aujourd'hui aucun écran fonctionnel dans le frontend. C'est un écart RBAC côté backend (le §5 du PRD prévoit « Vérifier son propre PV » pour ce rôle), volontairement non corrigé sans votre feu vert — dites-moi si vous voulez que je l'ajoute.
 - **Corpus OCR** : pas d'aperçu image lors de l'annotation (contrairement à l'écran de vérification PV) — coordonnées de zone saisies en chiffres.
 - **Export tableaux de bord** : CSV uniquement, pas de PDF/Excel.
 - **Modèle OCR** : le CER/WER affiché vient d'un corpus synthétique (§17 du PRD, `docs/RECETTE.md`) — pas représentatif d'un usage réel.

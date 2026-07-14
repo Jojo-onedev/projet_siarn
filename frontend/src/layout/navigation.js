@@ -10,9 +10,16 @@ export const NAVIGATION = [
     epic: 'F3/F4',
     implemente: true,
     // Note : GET /pv et /pv/{id} n'incluent pas 'enseignant' cote backend
-    // (routes/api.php) - seul 'signaler-fraude' (sur un note_id deja connu)
-    // leur est ouvert. Ecart signale, pas corrige silencieusement ici.
+    // (routes/api.php) - ce role a son propre ecran scope a ses modules
+    // ("Mes modules" ci-dessous), pas d'acces a la liste complete des PV.
     roles: ['agent_scolarite', 'chef_departement', 'responsable_academique', 'directeur', 'admin'],
+  },
+  {
+    label: 'Mes modules',
+    to: '/mes-modules',
+    epic: 'suite-tests',
+    implemente: true,
+    roles: ['enseignant'],
   },
   {
     label: 'Validation',

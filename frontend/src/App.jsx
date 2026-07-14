@@ -22,6 +22,7 @@ import CorpusPage from './pages/corpus/CorpusPage';
 import ModelesOcrPage from './pages/ocr/ModelesOcrPage';
 import UtilisateursPage from './pages/utilisateurs/UtilisateursPage';
 import AbsencesPage from './pages/absences/AbsencesPage';
+import MesModulesPage from './pages/enseignant/MesModulesPage';
 import { NAVIGATION } from './layout/navigation';
 
 const ROLES_REFERENTIELS = ['agent_scolarite', 'chef_departement', 'responsable_academique', 'directeur', 'admin'];
@@ -174,6 +175,15 @@ export default function App() {
             element={(
               <ProtectedRoute roles={ROLES_ABSENCES}>
                 <AbsencesPage />
+              </ProtectedRoute>
+            )}
+          />
+
+          <Route
+            path="/mes-modules"
+            element={(
+              <ProtectedRoute roles={['enseignant']}>
+                <MesModulesPage />
               </ProtectedRoute>
             )}
           />
