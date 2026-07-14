@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Referentiels;
 use App\Http\Controllers\Controller;
 use App\Models\Etudiant;
 use App\Models\Filiere;
+use App\Models\Utilisateur;
 use App\Services\Audit\JournalAuditService;
 use App\Services\Notes\CalculMoyenneService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -67,13 +70,50 @@ class EtudiantController extends Controller
         return response()->json($this->calculMoyenne->calculer($etudiant, $donnees['semestre'], $donnees['annee_academique']));
     }
 
+    /**
+     * §7.2 : la creation du profil etudiant peut, optionnellement, creer et
+     * lier dans le meme geste un compte de connexion (Utilisateur role
+     * 'etudiant') - ecart corrige suite a un test manuel : jusqu'ici, aucun
+     * ecran ne permettait de renseigner etudiants.utilisateur_id, si bien
+     * qu'un etudiant reel n'aurait jamais pu se connecter au portail (§7.6).
+     * email/mot_de_passe restent tous deux optionnels mais lies : l'un ne va
+     * pas sans l'autre (required_with).
+     */
     public function store(Request $request)
     {
         $donnees = $this->valider($request);
+        $compte = $request->validate([
+            'email' => ['nullable', 'required_with:mot_de_passe', 'email', 'unique:utilisateurs,email'],
+            'mot_de_passe' => ['nullable', 'required_with:email', 'string', 'min:12'],
+        ]);
 
-        $etudiant = Etudiant::create($donnees + ['actif' => true]);
+        $etudiant = DB::transaction(function () use ($donnees, $compte, $request) {
+            $utilisateurId = null;
 
-        $this->journalAudit->enregistrer('etudiant.creation', $request->user()->id, 'etudiant', $etudiant->id, ['matricule' => $etudiant->matricule]);
+            if (! empty($compte['email'])) {
+                $utilisateur = Utilisateur::create([
+                    'nom' => $donnees['nom'],
+                    'prenom' => $donnees['prenom'],
+                    'email' => $compte['email'],
+                    'mot_de_passe_hash' => Hash::make($compte['mot_de_passe']),
+                    'role' => 'etudiant',
+                    'statut_mfa' => false,
+                    'actif' => true,
+                ]);
+                $utilisateurId = $utilisateur->id;
+
+                $this->journalAudit->enregistrer('utilisateur.creation', $request->user()->id, 'utilisateur', $utilisateur->id, ['role' => 'etudiant']);
+            }
+
+            $etudiant = Etudiant::create($donnees + ['actif' => true, 'utilisateur_id' => $utilisateurId]);
+
+            $this->journalAudit->enregistrer('etudiant.creation', $request->user()->id, 'etudiant', $etudiant->id, [
+                'matricule' => $etudiant->matricule,
+                'compte_cree' => $utilisateurId !== null,
+            ]);
+
+            return $etudiant;
+        });
 
         return response()->json($this->presenter($etudiant->load('filiere')), 201);
     }
@@ -186,6 +226,7 @@ class EtudiantController extends Controller
             'niveau' => $etudiant->niveau,
             'annee_academique' => $etudiant->annee_academique,
             'actif' => $etudiant->actif,
+            'compte_lie' => $etudiant->utilisateur_id !== null,
         ];
     }
 }

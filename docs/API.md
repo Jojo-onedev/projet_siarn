@@ -32,8 +32,8 @@ Toutes les routes ci-dessous exigent en plus `mfa.requise` (bloque les rôles à
 | POST | `/modules`, PUT `/modules/{id}` | `agent_scolarite, admin` |
 | GET | `/etudiants`, `/etudiants/{id}` | lecture large |
 | GET | `/etudiants/{id}/moyenne` | lecture large — calcul automatique de moyenne pondérée (§7.6) |
-| POST | `/etudiants`, PUT `/etudiants/{id}` | `agent_scolarite, admin` |
-| POST | `/etudiants/import` | `agent_scolarite, admin` — import CSV (attention BOM UTF-8 Excel, déjà géré) |
+| POST | `/etudiants`, PUT `/etudiants/{id}` | `agent_scolarite, admin` | `POST /etudiants` accepte optionnellement `email` + `mot_de_passe` (les deux ensemble ou aucun) : si fournis, crée **et lie** dans la même transaction un compte de connexion (`Utilisateur` rôle `etudiant`, `statut_mfa=false`) via `etudiants.utilisateur_id`. Ajouté après un test manuel : sans ce lien, aucun étudiant réel ne pouvait se connecter au portail (§7.6) — ni `POST /etudiants` ni `POST /utilisateurs` ne le faisaient auparavant. |
+| POST | `/etudiants/import` | `agent_scolarite, admin` — import CSV (attention BOM UTF-8 Excel, déjà géré). Ne crée **jamais** de compte de connexion (pas d'email dans le CSV) — utiliser `POST /etudiants` au cas par cas pour un accès portail. |
 
 ## Procès-verbaux / workflow (§7.3–§7.7, §9.1)
 
