@@ -5,6 +5,15 @@ import * as authApi from '../api/auth';
 
 const AuthContext = createContext(null);
 
+// Miroir de App\Enums\RoleUtilisateur::mfaObligatoire() (backend-api) - sert
+// uniquement a rediriger PROACTIVEMENT vers l'enrolement juste apres la
+// connexion, plutot que d'attendre un premier appel metier qui echoue en
+// 403 MFA_REQUIS (source de confusion reelle : le tableau de bord semblait
+// accessible avant qu'un clic sur un ecran metier ne renvoie a l'enrolement).
+// Le 403 MFA_REQUIS intercepte globalement (cf. api/client.js) reste le
+// filet de securite reel si ce miroir se desynchronise du backend.
+const ROLES_MFA_OBLIGATOIRE = ['agent_scolarite', 'chef_departement', 'responsable_academique', 'admin', 'directeur'];
+
 // Le JWT vit uniquement en mémoire (jamais localStorage/sessionStorage) :
 // une session survit à une navigation interne mais pas à un rechargement de
 // page, compromis assumé tant qu'aucun refresh token n'existe côté backend
@@ -43,7 +52,7 @@ export function AuthProvider({ children }) {
     }
     setToken(resultat.token);
     setUtilisateur(resultat.utilisateur);
-    navigate('/', { replace: true });
+    naviguerApresConnexion(resultat.utilisateur);
     return resultat;
   }, [navigate]);
 
@@ -52,9 +61,14 @@ export function AuthProvider({ children }) {
     setToken(resultat.token);
     setUtilisateur(resultat.utilisateur);
     setMfaToken(null);
-    navigate('/', { replace: true });
+    naviguerApresConnexion(resultat.utilisateur);
     return resultat;
   }, [mfaToken, navigate]);
+
+  function naviguerApresConnexion(utilisateurConnecte) {
+    const doitEnroler = ROLES_MFA_OBLIGATOIRE.includes(utilisateurConnecte.role) && !utilisateurConnecte.statut_mfa;
+    navigate(doitEnroler ? '/mfa/activation' : '/', { replace: true });
+  }
 
   const demarrerEnrolementMfa = useCallback(() => authApi.activerMfa(), []);
 

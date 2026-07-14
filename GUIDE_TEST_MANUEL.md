@@ -2,6 +2,12 @@
 
 Ce guide sert à tester l'application vous-même, écran par écran, en vous connectant successivement avec chaque persona (rôle) du système. Il complète `PRD_FRONTEND.md` (spécification) et `docs/RECETTE.md` (preuves de test automatisées) — ici, c'est vous qui jouez chaque rôle dans un vrai navigateur.
 
+## Correctifs suite à vos premiers tests (étapes 1 et 2)
+
+- **Corrigé** : après une connexion (mot de passe ou code MFA), vous étiez redirigé vers le tableau de bord même si le MFA n'était pas encore configuré — l'obligation n'apparaissait qu'au premier clic sur un écran métier, ce qui était déroutant. La redirection vers l'activation MFA se fait maintenant **immédiatement** après la connexion pour les rôles concernés.
+- **Corrigé (donnée de test)** : le PV que vous aviez importé sous la nouvelle filière « Cybersecurity » était bloqué car aucun chef n'y était assigné. Un chef est maintenant assigné (`chef.smoke...`) — votre PV bloqué en « En validation » devrait être validable normalement si vous réessayez.
+- **À creuser** : vous avez signalé ne plus réussir à atteindre le tableau de bord même en entrant le bon code MFA sur un compte déjà configuré. Je n'ai pas pu reproduire ça depuis mes tests (pas de verrouillage de compte détecté en base). Si ça se reproduit, notez précisément : quel compte, le message d'erreur exact affiché (ou une capture), et si possible ouvrez la console navigateur (F12 → onglet Console) pour voir s'il y a une erreur rouge.
+
 ## 0. Prérequis
 
 - La stack Docker doit tourner : `docker compose ps` doit montrer `postgres`, `backend-api`, `ocr-service` en état `Up`.
@@ -41,9 +47,10 @@ Suivez cet ordre : chaque étape prépare les données nécessaires à la suivan
 
 Connectez-vous avec `agent.smoke.1783986173@siarn.local`, configurez le MFA.
 
-- [ ] **Référentiels** (`/referentiels`) : consultez la filière « Genie Logiciel Smoke » et le module GL301 déjà créés. Créez une nouvelle filière et un nouveau module pour voir le formulaire.
+- [ ] **Référentiels** (`/referentiels`) : consultez la filière « Genie Logiciel Smoke » et le module GL301 déjà créés.
 - [ ] **Référentiels → Étudiants** : importez `etudiants_exemple.csv`, vérifiez le compte-rendu (créés/mis à jour/erreurs). Créez un étudiant manuellement pour voir le formulaire.
-- [ ] **Procès-verbaux** (`/pv`) : cliquez « Importer des PV », sélectionnez `pv_exemple_1.jpg`, choisissez la filière/le module/semestre/année. Après import, le PV apparaît en statut **« En vérification »**.
+- [ ] *Optionnel, pour voir le formulaire* : créez une nouvelle filière/un nouveau module. ⚠️ **N'utilisez pas cette nouvelle filière pour l'import de PV ci-dessous** — un agent (non-admin) ne peut pas assigner de chef de département à la création (§F2, seul l'admin le peut), donc aucun chef ne pourra valider un PV qui y serait rattaché. Utilisez toujours **« Genie Logiciel Smoke » (code `GLS986172`)** pour la suite du parcours.
+- [ ] **Procès-verbaux** (`/pv`) : cliquez « Importer des PV », sélectionnez `pv_exemple_1.jpg`, choisissez la filière **Genie Logiciel Smoke**, le module GL301, un semestre/année. Après import, le PV apparaît en statut **« En vérification »**.
 - [ ] Ouvrez le PV importé : l'image prétraitée s'affiche avec des zones surlignées cliquables. Corrigez les 3 champs (en-tête, tableau de notes, signatures) — testez le survol/clic d'une zone pour voir le champ correspondant se surligner.
 - [ ] Dans la section **Notes**, ajoutez une note pour un étudiant (ex. MAT002 importé plus haut).
 - [ ] Une fois tous les champs corrigés, le statut passe automatiquement à **« En validation »**.
@@ -55,6 +62,8 @@ Connectez-vous avec `chef.smoke.1783986173@siarn.local`, configurez le MFA.
 - [ ] **Validation** (`/validation`) : le PV importé à l'étape 1 doit y apparaître (filtré sur « en validation »).
 - [ ] Ouvrez-le, choisissez **Valider**. Le statut passe à **« Intégré »**.
 - [ ] Vérifiez que **Référentiels/Tableaux de bord** ne montrent que la filière dont ce compte est chef (portée vérifiée côté serveur).
+
+⚠️ Si vous obtenez *« Vous n'êtes pas le chef de département de cette filière »* : le PV a été importé sous une filière dont ce compte n'est pas le chef (voir l'avertissement de l'étape 1). Deux solutions : reprendre l'étape 1 avec la bonne filière, **ou** vous connecter avec `responsable.smoke@siarn.local` qui peut valider n'importe quelle filière (voir ci-dessous).
 
 *Optionnel* : reconnectez-vous en `responsable.smoke@siarn.local` pour comparer — ce rôle voit **toutes** les filières sans restriction.
 
