@@ -51,6 +51,19 @@ export default function UtilisateursPage() {
     }
   }
 
+  async function reinitialiserMfa(u) {
+    setErreur(null);
+    setEnCoursId(u.id);
+    try {
+      await modifierUtilisateur(u.id, { reinitialiser_mfa: true });
+      charger();
+    } catch (err) {
+      setErreur(err instanceof ErreurApi ? err.message : 'Action impossible.');
+    } finally {
+      setEnCoursId(null);
+    }
+  }
+
   const colonnes = [
     { cle: 'nom', entete: 'Nom', rendu: (u) => `${u.prenom} ${u.nom}` },
     { cle: 'email', entete: 'E-mail' },
@@ -73,6 +86,11 @@ export default function UtilisateursPage() {
           <Bouton type="button" variante="secondaire" onClick={() => setReinitialisationCible(u)}>
             Réinitialiser mot de passe
           </Bouton>
+          {u.statut_mfa ? (
+            <Bouton type="button" variante="secondaire" chargement={enCoursId === u.id} onClick={() => reinitialiserMfa(u)}>
+              Réinitialiser MFA
+            </Bouton>
+          ) : null}
         </div>
       ),
     },

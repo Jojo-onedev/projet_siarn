@@ -69,12 +69,19 @@ class UtilisateurController extends Controller
      * l'admin - seul recours pour un utilisateur ayant perdu son mot de
      * passe, aucune route de reinitialisation self-service n'existant en V1
      * (pas de messagerie integree pour un lien de reinitialisation).
+     *
+     * `reinitialiser_mfa` (optionnel) : meme logique pour un appareil
+     * d'authentification perdu/casse - sans ca, l'utilisateur restait
+     * bloque definitivement (statut_mfa=true mais plus aucun moyen de
+     * generer le code attendu). Repasse par le flux normal d'activation
+     * MFA (POST /auth/mfa/activer) a sa prochaine connexion.
      */
     public function update(Request $request, Utilisateur $utilisateur)
     {
         $donnees = $request->validate([
             'actif' => ['sometimes', 'boolean'],
             'nouveau_mot_de_passe' => ['sometimes', 'string', 'min:12'],
+            'reinitialiser_mfa' => ['sometimes', 'boolean'],
         ]);
 
         if (array_key_exists('actif', $donnees) && $utilisateur->id === $request->user()->id && ! $donnees['actif']) {
@@ -96,6 +103,18 @@ class UtilisateurController extends Controller
             $utilisateur->mot_de_passe_hash = Hash::make($donnees['nouveau_mot_de_passe']);
             $this->journalAudit->enregistrer(
                 'utilisateur.reinitialisation_mot_de_passe',
+                $request->user()->id,
+                'utilisateur',
+                $utilisateur->id,
+                [],
+            );
+        }
+
+        if (! empty($donnees['reinitialiser_mfa'])) {
+            $utilisateur->statut_mfa = false;
+            $utilisateur->secret_mfa = null;
+            $this->journalAudit->enregistrer(
+                'utilisateur.reinitialisation_mfa',
                 $request->user()->id,
                 'utilisateur',
                 $utilisateur->id,
