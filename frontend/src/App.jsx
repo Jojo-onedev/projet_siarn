@@ -13,6 +13,7 @@ import ModulesSection from './pages/referentiels/ModulesSection';
 import EtudiantsSection from './pages/referentiels/EtudiantsSection';
 import PvListPage from './pages/pv/PvListPage';
 import PvDetailPage from './pages/pv/PvDetailPage';
+import MonProfilPage from './pages/portail/MonProfilPage';
 import MesNotesPage from './pages/portail/MesNotesPage';
 import MesReclamationsPage from './pages/portail/MesReclamationsPage';
 import ReclamationsPage from './pages/reclamations/ReclamationsPage';
@@ -103,6 +104,14 @@ export default function App() {
             )}
           />
 
+          <Route
+            path="/mon-profil"
+            element={(
+              <ProtectedRoute roles={['etudiant']}>
+                <MonProfilPage />
+              </ProtectedRoute>
+            )}
+          />
           <Route
             path="/mes-notes"
             element={(

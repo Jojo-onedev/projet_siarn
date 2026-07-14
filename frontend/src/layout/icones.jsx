@@ -50,6 +50,15 @@ export const ICONES = {
   '/utilisateurs': (
     <svg {...props}><circle cx="9" cy="8" r="3" /><path d="M3.5 20c0-3.3 2.5-5.5 5.5-5.5s5.5 2.2 5.5 5.5" /><circle cx="17.5" cy="8.5" r="2.3" /><path d="M15 14.8c1.4-.4 2.9-.2 3.9.6 1.1.9 1.8 2.5 1.8 4.6" /></svg>
   ),
+  '/absences': (
+    <svg {...props}><rect x="3.5" y="4.5" width="17" height="16" rx="2" /><path d="M3.5 9.5h17M8 3v3M16 3v3" /><path d="m8.5 14 2.5 2.5L16 12" /></svg>
+  ),
+  '/mes-modules': (
+    <svg {...props}><path d="M4 6.5c0-1.1.9-2 2-2h9.5v15H6a2 2 0 0 1-2-2z" /><path d="M15.5 4.5H18a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2h-2.5" /><path d="M7.5 8h6M7.5 11.5h6" /></svg>
+  ),
+  '/mon-profil': (
+    <svg {...props}><circle cx="12" cy="8" r="3.5" /><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" /></svg>
+  ),
 };
 
 export function IconeNav({ chemin }) {

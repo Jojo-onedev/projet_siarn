@@ -43,6 +43,13 @@ export const NAVIGATION = [
     roles: ['agent_scolarite', 'chef_departement', 'responsable_academique', 'directeur', 'admin'],
   },
   {
+    label: 'Mon profil',
+    to: '/mon-profil',
+    epic: 'suite-tests',
+    implemente: true,
+    roles: ['etudiant'],
+  },
+  {
     label: 'Mes notes',
     to: '/mes-notes',
     epic: 'F6',

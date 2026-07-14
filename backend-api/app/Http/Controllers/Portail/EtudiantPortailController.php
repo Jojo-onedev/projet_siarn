@@ -56,6 +56,10 @@ class EtudiantPortailController extends Controller
         }
 
         return response()->json($requete->get()->map(fn (Note $n) => [
+            // id ajoute suite a une remarque manuelle : sans lui, une
+            // reclamation ne pouvait jamais cibler une note precise
+            // (POST /reclamations accepte pourtant note_id en optionnel).
+            'id' => $n->id,
             'code_matiere' => $n->pv->code_matiere,
             'semestre' => $n->pv->semestre,
             'annee_academique' => $n->pv->annee_academique,

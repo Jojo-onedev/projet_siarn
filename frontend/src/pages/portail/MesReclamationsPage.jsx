@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { listerMesReclamations } from '../../api/portail';
 import { creerReclamation } from '../../api/reclamations';
 import { Tableau } from '../../components/ui/Tableau';
@@ -11,16 +12,36 @@ import { libelleStatutReclamation, teinteStatutReclamation } from './statutsRecl
 import '../pages.css';
 
 export default function MesReclamationsPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [reclamations, setReclamations] = useState([]);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState(null);
   const [modaleOuverte, setModaleOuverte] = useState(false);
+  // Pre-remplissage depuis "Mes notes" -> bouton Réclamer (note_id + un
+  // libellé lisible, portés via l'état de navigation, jamais dans l'URL).
+  const [contexteNote, setContexteNote] = useState(
+    location.state?.noteId ? { id: location.state.noteId, description: location.state.descriptionNote } : null
+  );
 
   useEffect(() => { charger(); }, []);
+
+  useEffect(() => {
+    if (location.state?.noteId) {
+      setModaleOuverte(true);
+      navigate(location.pathname, { replace: true, state: null });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function charger() {
     setChargement(true);
     listerMesReclamations().then(setReclamations).catch(() => setErreur('Impossible de charger vos réclamations.')).finally(() => setChargement(false));
+  }
+
+  function ouvrirNouvelle() {
+    setContexteNote(null);
+    setModaleOuverte(true);
   }
 
   const colonnes = [
@@ -40,7 +61,7 @@ export default function MesReclamationsPage() {
 
       <div className="section-entete">
         <span />
-        <Bouton onClick={() => setModaleOuverte(true)}>Nouvelle réclamation</Bouton>
+        <Bouton onClick={ouvrirNouvelle}>Nouvelle réclamation</Bouton>
       </div>
 
       {erreur ? <Alerte type="erreur">{erreur}</Alerte> : null}
@@ -50,6 +71,7 @@ export default function MesReclamationsPage() {
 
       {modaleOuverte ? (
         <FormulaireReclamation
+          contexteNote={contexteNote}
           onFermer={() => setModaleOuverte(false)}
           onTermine={() => { setModaleOuverte(false); charger(); }}
         />
@@ -58,7 +80,7 @@ export default function MesReclamationsPage() {
   );
 }
 
-function FormulaireReclamation({ onFermer, onTermine }) {
+function FormulaireReclamation({ contexteNote, onFermer, onTermine }) {
   const [motif, setMotif] = useState('');
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState(null);
@@ -68,7 +90,7 @@ function FormulaireReclamation({ onFermer, onTermine }) {
     setErreur(null);
     setEnCours(true);
     try {
-      await creerReclamation({ motif });
+      await creerReclamation({ motif, note_id: contexteNote?.id });
       onTermine();
     } catch (err) {
       setErreur(err instanceof ErreurApi ? err.message : 'Envoi impossible.');
@@ -81,6 +103,9 @@ function FormulaireReclamation({ onFermer, onTermine }) {
     <Modale titre="Nouvelle réclamation" onFermer={onFermer}>
       <form className="formulaire" onSubmit={gererEnvoi} noValidate>
         {erreur ? <Alerte type="erreur">{erreur}</Alerte> : null}
+        {contexteNote ? (
+          <Alerte type="info" titre="Concernant cette note">{contexteNote.description}</Alerte>
+        ) : null}
         <div className="champ">
           <label className="champ__label" htmlFor="motif-reclamation">Décrivez votre demande</label>
           <textarea
