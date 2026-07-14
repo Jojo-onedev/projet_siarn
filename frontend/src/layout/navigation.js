@@ -22,6 +22,13 @@ export const NAVIGATION = [
     roles: ['chef_departement', 'responsable_academique'],
   },
   {
+    label: 'Absences',
+    to: '/absences',
+    epic: 'suite-tests',
+    implemente: true,
+    roles: ['agent_scolarite', 'enseignant', 'admin'],
+  },
+  {
     label: 'Référentiels',
     to: '/referentiels',
     epic: 'F2',

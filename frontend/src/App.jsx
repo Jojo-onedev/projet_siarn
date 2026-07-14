@@ -21,9 +21,11 @@ import AuditPage from './pages/audit/AuditPage';
 import CorpusPage from './pages/corpus/CorpusPage';
 import ModelesOcrPage from './pages/ocr/ModelesOcrPage';
 import UtilisateursPage from './pages/utilisateurs/UtilisateursPage';
+import AbsencesPage from './pages/absences/AbsencesPage';
 import { NAVIGATION } from './layout/navigation';
 
 const ROLES_REFERENTIELS = ['agent_scolarite', 'chef_departement', 'responsable_academique', 'directeur', 'admin'];
+const ROLES_ABSENCES = ['agent_scolarite', 'enseignant', 'admin'];
 const ROLES_PV = ['agent_scolarite', 'chef_departement', 'responsable_academique', 'directeur', 'admin'];
 const ROLES_VALIDATION = ['chef_departement', 'responsable_academique'];
 const ROLES_RECLAMATIONS_STAFF = ['agent_scolarite', 'chef_departement', 'responsable_academique', 'admin'];
@@ -163,6 +165,15 @@ export default function App() {
             element={(
               <ProtectedRoute roles={['admin']}>
                 <UtilisateursPage />
+              </ProtectedRoute>
+            )}
+          />
+
+          <Route
+            path="/absences"
+            element={(
+              <ProtectedRoute roles={ROLES_ABSENCES}>
+                <AbsencesPage />
               </ProtectedRoute>
             )}
           />
