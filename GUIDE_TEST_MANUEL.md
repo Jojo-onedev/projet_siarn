@@ -48,7 +48,8 @@ Suivez cet ordre : chaque étape prépare les données nécessaires à la suivan
 Connectez-vous avec `agent.smoke.1783986173@siarn.local`, configurez le MFA.
 
 - [ ] **Référentiels** (`/referentiels`) : consultez la filière « Genie Logiciel Smoke » et le module GL301 déjà créés.
-- [ ] **Référentiels → Étudiants** : importez `etudiants_exemple.csv`, vérifiez le compte-rendu (créés/mis à jour/erreurs). Créez un étudiant manuellement pour voir le formulaire.
+- [ ] **Référentiels → Étudiants** : importez `etudiants_exemple.csv`, vérifiez le compte-rendu (créés/mis à jour/erreurs) — l'import CSV ne crée jamais de compte de connexion.
+- [ ] Créez un étudiant manuellement, cochez **« Créer aussi un accès au portail étudiant »** : matricule et mot de passe sont pré-générés (boutons « Générer »), l'e-mail est suggéré depuis le nom/prénom. Notez le mot de passe affiché dans le récapitulatif final (il ne sera plus jamais montré) — vous vous en servirez à l'étape 4 pour tester la connexion de ce nouvel étudiant.
 - [ ] *Optionnel, pour voir le formulaire* : créez une nouvelle filière/un nouveau module. ⚠️ **N'utilisez pas cette nouvelle filière pour l'import de PV ci-dessous** — un agent (non-admin) ne peut pas assigner de chef de département à la création (§F2, seul l'admin le peut), donc aucun chef ne pourra valider un PV qui y serait rattaché. Utilisez toujours **« Genie Logiciel Smoke » (code `GLS986172`)** pour la suite du parcours.
 - [ ] **Procès-verbaux** (`/pv`) : cliquez « Importer des PV », sélectionnez `pv_exemple_1.jpg`, choisissez la filière **Genie Logiciel Smoke**, le module GL301, un semestre/année. Après import, le PV apparaît en statut **« En vérification »**.
 - [ ] Ouvrez le PV importé : l'image prétraitée s'affiche avec des zones surlignées cliquables. Corrigez les 3 champs (en-tête, tableau de notes, signatures) — testez le survol/clic d'une zone pour voir le champ correspondant se surligner.
