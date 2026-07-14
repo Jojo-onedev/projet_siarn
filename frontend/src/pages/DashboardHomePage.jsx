@@ -27,7 +27,7 @@ export default function DashboardHomePage() {
             <span className={`carte-lien__icone carte-lien__icone--${TEINTES[index % TEINTES.length]}`}>
               <IconeNav chemin={item.to} />
             </span>
-            <span className="carte-lien__epic">{item.epic}</span>
+            {!item.implemente ? <span className="carte-lien__epic">{item.epic}</span> : null}
             <h2>{item.label}</h2>
           </Link>
         ))}

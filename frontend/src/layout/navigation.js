@@ -3,7 +3,7 @@
 // sera construit ; tant que l'epic n'est pas livre, la route pointe vers
 // un ecran "a venir" honnete plutot qu'une fonctionnalite factice.
 export const NAVIGATION = [
-  { label: 'Tableau de bord', to: '/', epic: 'F1', roles: null },
+  { label: 'Tableau de bord', to: '/', epic: 'F1', implemente: true, roles: null },
   {
     label: 'Procès-verbaux',
     to: '/pv',
@@ -20,6 +20,7 @@ export const NAVIGATION = [
     label: 'Référentiels',
     to: '/referentiels',
     epic: 'F2',
+    implemente: true,
     roles: ['agent_scolarite', 'chef_departement', 'responsable_academique', 'directeur', 'admin'],
   },
   {
