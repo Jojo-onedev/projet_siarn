@@ -1,0 +1,189 @@
+.auth-mise-en-page {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.auth-mise-en-page__panneau {
+  display: none;
+}
+
+/* Le panneau editorial n'apparait qu'a partir de la largeur tablette :
+   sur mobile, seule la carte de formulaire est affichee (§ responsive,
+   PRD_FRONTEND.md). */
+@media (min-width: 900px) {
+  .auth-mise-en-page {
+    grid-template-columns: minmax(360px, 38%) 1fr;
+  }
+
+  .auth-mise-en-page__panneau {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: var(--space-8) var(--space-7);
+    background: linear-gradient(160deg, var(--color-ink-900) 0%, var(--color-ink-700) 100%);
+    color: var(--color-paper-100);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .auth-mise-en-page__panneau::after {
+    content: '';
+    position: absolute;
+    inset: auto -20% -30% auto;
+    width: 60%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--color-accent-600) 55%, transparent) 0%, transparent 70%);
+  }
+}
+
+.auth-mise-en-page__marque {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  z-index: 1;
+}
+
+.auth-mise-en-page__marque--mobile {
+  margin-bottom: var(--space-6);
+}
+
+@media (min-width: 900px) {
+  .auth-mise-en-page__marque--mobile {
+    display: none;
+  }
+}
+
+.auth-mise-en-page__monogramme {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-600);
+  color: var(--color-paper-100);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-lg);
+  flex-shrink: 0;
+}
+
+.auth-mise-en-page__nom {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-lg);
+  letter-spacing: 0.02em;
+}
+
+.auth-mise-en-page__accroche {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-style: italic;
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  max-width: 30ch;
+  z-index: 1;
+}
+
+.auth-mise-en-page__accroche em {
+  color: var(--color-accent-100);
+  font-style: italic;
+}
+
+.auth-mise-en-page__trait {
+  width: 64px;
+  height: 3px;
+  background: var(--color-accent-500);
+  border-radius: var(--radius-pill);
+  z-index: 1;
+}
+
+.auth-mise-en-page__contenu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+}
+
+.auth-mise-en-page__carte {
+  width: 100%;
+  max-width: 420px;
+  padding: var(--space-6);
+  animation: apparition var(--duration-slow) var(--ease-standard);
+}
+
+@media (min-width: 480px) {
+  .auth-mise-en-page__carte {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-7);
+  }
+}
+
+@keyframes apparition {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-mise-en-page__eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-accent-600);
+  margin-bottom: var(--space-2);
+}
+
+.auth-mise-en-page__titre {
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-2);
+}
+
+.auth-mise-en-page__sous-titre {
+  color: var(--color-ink-500);
+  margin-bottom: var(--space-6);
+}
+
+.auth-formulaire {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.auth-formulaire__pied {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-ink-500);
+  text-align: center;
+}
+
+.auth-formulaire__code {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  letter-spacing: 0.35em;
+  padding: var(--space-4);
+}
+
+.auth-secret {
+  background: var(--color-paper-200);
+  border: 1px solid var(--color-paper-300);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.auth-secret__valeur {
+  font-family: 'Work Sans', monospace;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  word-break: break-all;
+  font-size: var(--text-md);
+  color: var(--color-ink-900);
+}

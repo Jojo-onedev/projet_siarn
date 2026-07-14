@@ -1,0 +1,239 @@
+.app-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-shell__topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-ink-900);
+  color: var(--color-paper-100);
+  box-shadow: var(--shadow-sm);
+}
+
+.app-shell__bouton-menu {
+  display: grid;
+  place-items: center;
+  width: var(--tap-target-min);
+  height: var(--tap-target-min);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.app-shell__bouton-menu:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.app-shell__icone-menu,
+.app-shell__icone-menu::before,
+.app-shell__icone-menu::after {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: currentColor;
+  border-radius: var(--radius-pill);
+  transition: transform var(--duration-fast) var(--ease-standard), opacity var(--duration-fast) var(--ease-standard);
+}
+
+.app-shell__icone-menu {
+  position: relative;
+}
+
+.app-shell__icone-menu::before,
+.app-shell__icone-menu::after {
+  content: '';
+  position: absolute;
+  left: 0;
+}
+
+.app-shell__icone-menu::before { top: -6px; }
+.app-shell__icone-menu::after { top: 6px; }
+
+.app-shell__icone-menu[data-ouvert='true'] {
+  background: transparent;
+}
+
+.app-shell__icone-menu[data-ouvert='true']::before {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.app-shell__icone-menu[data-ouvert='true']::after {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+.app-shell__marque {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.app-shell__monogramme {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-600);
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.app-shell__nom {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.app-shell__titre-section {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--text-base);
+  color: var(--color-paper-200);
+  flex: 1;
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .app-shell__titre-section {
+    display: block;
+  }
+}
+
+.app-shell__utilisateur {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.app-shell__identite {
+  display: none;
+  flex-direction: column;
+  text-align: right;
+  line-height: 1.25;
+}
+
+@media (min-width: 560px) {
+  .app-shell__identite {
+    display: flex;
+  }
+}
+
+.app-shell__nom-utilisateur {
+  font-weight: 600;
+  font-size: var(--text-sm);
+}
+
+.app-shell__role {
+  font-size: var(--text-xs);
+  color: var(--color-paper-300);
+}
+
+.app-shell__utilisateur .bouton--fantome {
+  color: var(--color-paper-100);
+}
+
+.app-shell__utilisateur .bouton--fantome:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.app-shell__corps {
+  flex: 1;
+  display: flex;
+  position: relative;
+  min-height: 0;
+}
+
+.app-shell__voile {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 23, 31, 0.4);
+  border: none;
+  z-index: 20;
+}
+
+.app-shell__nav {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 280px;
+  padding: var(--space-6) var(--space-4);
+  padding-top: calc(64px + var(--space-6));
+  background: var(--color-paper-200);
+  border-right: 1px solid var(--color-paper-300);
+  transform: translateX(-100%);
+  transition: transform var(--duration-base) var(--ease-standard);
+  z-index: 30;
+  overflow-y: auto;
+}
+
+.app-shell__nav[data-ouvert='true'] {
+  transform: translateX(0);
+}
+
+.app-shell__nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.app-shell__lien {
+  display: block;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  color: var(--color-ink-700);
+  font-weight: 500;
+  font-size: var(--text-sm);
+  min-height: var(--tap-target-min);
+  display: flex;
+  align-items: center;
+}
+
+.app-shell__lien:hover {
+  background: var(--color-paper-300);
+}
+
+.app-shell__lien--actif {
+  background: var(--color-ink-900);
+  color: var(--color-paper-100);
+}
+
+.app-shell__contenu {
+  flex: 1;
+  padding: var(--space-5);
+  min-width: 0;
+}
+
+@media (min-width: 960px) {
+  .app-shell__bouton-menu {
+    display: none;
+  }
+
+  .app-shell__voile {
+    display: none;
+  }
+
+  .app-shell__nav {
+    position: sticky;
+    transform: none;
+    height: calc(100dvh - 64px);
+    padding-top: var(--space-6);
+  }
+
+  .app-shell__contenu {
+    padding: var(--space-7);
+  }
+}
