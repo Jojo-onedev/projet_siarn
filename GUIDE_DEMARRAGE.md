@@ -25,9 +25,9 @@ Choisissez plutôt un dossier local simple, par exemple `C:\Projets\` ou `C:\Dev
 
 ## 3. Récupérer le projet depuis GitHub
 
-Ouvrez un terminal dans le dossier choisi à l'étape précédente, et récupérez le projet à l'adresse suivante :
+Ouvrez un terminal dans le dossier choisi à l'étape précédente, et récupérez le projet en tapant :
 
-`https://github.com/Jojo-onedev/projet_siarn.git`
+`git clone https://github.com/Jojo-onedev/projet_siarn.git`
 
 Cela crée un dossier `projet_siarn` contenant tout le code. Placez-vous ensuite à l'intérieur de ce dossier pour la suite des opérations.
 
